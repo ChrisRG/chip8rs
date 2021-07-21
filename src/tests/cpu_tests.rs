@@ -19,6 +19,6 @@ fn test_load_rom() {
     let test_rom = vec![0xCC; 64];
     // Test load 64 bytes of data
     cpu.load_rom(test_rom);
-    assert_eq!(cpu.ram[512], 0xCC);
-    assert_eq!(cpu.ram[575], 0xCC);
+    assert_eq!(cpu.ram.read_byte(512), 0xCC);
+    assert_eq!(cpu.ram.read_byte(575), 0xCC);
 }
