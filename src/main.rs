@@ -4,6 +4,8 @@ mod ram;
 
 use cpu::Cpu;
 
+use minifb::{Key, KeyRepeat, Window, WindowOptions};
+
 fn main() {
     println!("Starting CHIP-8 emulator...");
     // Setup graphics - TODO
@@ -14,5 +16,16 @@ fn main() {
     cpu.load_rom(test_rom);
     // Start emulation loop
     cpu.execute_cycle();
-    cpu.execute_cycle();
+
+    let width = 640;
+    let height = 320;
+
+    let mut window = Window::new("CHIP8RS", width, height, WindowOptions::default())
+        .unwrap_or_else(|e| {
+            panic!("Window creation failed: {:?}", e);
+        });
+
+    while window.is_open() && !window.is_key_down(Key::Escape) {
+        window.update();
+    }
 }

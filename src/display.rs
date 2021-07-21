@@ -11,4 +11,10 @@ impl Display {
             screen: [0; WIDTH * HEIGHT],
         }
     }
+
+    pub fn clear(&mut self) {
+        for pixel in self.screen.iter_mut() {
+            *pixel = 0;
+        }
+    }
 }
