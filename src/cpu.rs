@@ -58,12 +58,19 @@ impl Cpu {
             ((opcode & 0x00F0) >> 4) as u8,
             (opcode & 0x000F) as u8,
         );
-        // NNN: might need to use last 12 bits, use bitwise & to mask again
+        let x = nibbles.1 as usize;
+        let y = nibbles.2 as usize;
+        let n = nibbles.3 as usize;
+        let nn = (opcode & 0x00FF) as usize;
         let nnn = (opcode & 0x0FFF) as usize;
+        println!("NNN: {}", nnn);
         match nibbles {
-            (0x00, 0x00, 0x0E, 0x00) => {}        // 00E0: Clear screen
-            (0x00, 0x00, 0x0E, 0x0E) => {}        // 00EE: Return from subroutine
-            (0x0A, _, _, _) => self.op_annn(nnn), // ANNN: Set I to NNN
+            (0x00, 0x00, 0x0E, 0x00) => {}            // 00E0: Clear screen
+            (0x00, 0x00, 0x0E, 0x0E) => {}            // 00EE: Return from subroutine
+            (0x0A, _, _, _) => self.op_annn(nnn),     // ANNN: Set I to NNN
+            (0x02, _, _, _) => self.op_2nnn(nnn),     // 2NNN: Call subroutine at NNN
+            (0x08, _, _, 0x04) => self.op_8xy4(x, y), // 8XY4: Add VY to VX
+            (0x0F, _, 0x03, 0x03) => self.op_fx33(x), // FX33: Store VX at addresses I, I+1, I+2
             _ => println!("Unrecognized opcode {:?}", nibbles),
         }
     }
@@ -83,6 +90,33 @@ impl Cpu {
     fn op_annn(&mut self, nnn: usize) {
         self.i = nnn;
         println!("I: {:x}", nnn);
+        self.pc += 2;
+    }
+
+    fn op_2nnn(&mut self, nnn: usize) {
+        self.stack[self.sp] = self.pc + 2;
+        self.sp += 1;
+        println!("Stack {:?}", self.stack);
+        self.pc = nnn;
+        println!("PC: {}", self.pc);
+    }
+
+    // Add VY to VX
+    // If result is great than 255, VF
+    fn op_8xy4(&mut self, x: usize, y: usize) {
+        let vx = self.v[x] as u16;
+        let vy = self.v[y] as u16;
+        let result = vx + vy;
+        self.v[x] = result as u8;
+        self.v[0x0F] = if result > 0xFF { 1 } else { 0 };
+        self.pc += 2;
+    }
+
+    // Store decimal represnetaiton of VX in addresses I, I+1, I+2
+    fn op_fx33(&mut self, x: usize) {
+        self.ram[self.i] = self.v[x] / 100;
+        self.ram[self.i + 1] = (self.v[x] % 100) / 10;
+        self.ram[self.i + 2] = self.v[x] % 10;
         self.pc += 2;
     }
 }
