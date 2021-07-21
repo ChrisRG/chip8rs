@@ -65,16 +65,18 @@ impl Cpu {
         );
         let x = nibbles.1 as usize;
         let y = nibbles.2 as usize;
-        let n = nibbles.3 as usize;
-        let kk = (opcode & 0x00FF) as usize;
-        let nnn = (opcode & 0x0FFF) as usize;
+        let n = nibbles.3 as u8;
+        let kk = (opcode & 0x00FF) as u8;
+        let nnn = opcode & 0x0FFF;
         match nibbles {
             //
-            (0x00, 0x00, 0x0E, 0x00) => self.op_00e0(), // 00E0: Clear display
-            (0x00, 0x00, 0x0E, 0x0E) => self.op_00ee(), // 00EE: Return from subroutine
-            (0x00, _, _, _) => self.op_0nnn(nnn), // 0nnn: jump to a machine code routine at nnn
+            (0x00, _, _, _) => match kk {
+                0xE0 => self.op_00e0(), // 00E0: Clear display
+                0xEE => self.op_00ee(), // 00EE: Return from subroutine
+                _ => self.op_0nnn(nnn), // 0nnn: jump to a machine code routine at nnn
+            },
             (0x01, _, _, _) => self.op_1nnn(nnn), // 1nnn: JP addrl Jump to location nnn. The interpreter sets the program counter to nnn.
-            // 2nnn: CALL addr Call subroutine at nnn. The interpreter increments the stack pointer, then puts the current PC on the top of the stack. The PC is then set to nnn.
+            // 2nnn: Call subroutine at nnn. The interpreter increments the stack pointer, then puts the current PC on the top of the stack. The PC is then set to nnn.
             (0x02, _, _, _) => self.op_2nnn(nnn), // 2NNN: Call subroutine at NNN
             // 3xkk: Skip next instruction if Vx = kk. The interpreter compares register Vx to kk, and if they are equal, increments the program counter by 2.
             // 4xkk: Skip next instruction if Vx != kk. The interpreter compares register Vx to kk, and if they are not equal, increments the program counter by 2.
@@ -131,14 +133,14 @@ impl Cpu {
 
     fn op_00e0(&mut self) {}
     fn op_00ee(&mut self) {}
-    fn op_0nnn(&mut self, nnn: usize) {}
+    fn op_0nnn(&mut self, nnn: u16) {}
 
-    fn op_1nnn(&mut self, nnn: usize) {}
+    fn op_1nnn(&mut self, nnn: u16) {}
 
-    fn op_2nnn(&mut self, nnn: usize) {
+    fn op_2nnn(&mut self, nnn: u16) {
         self.stack[self.sp] = self.pc + 2;
         self.sp += 1;
-        self.pc = nnn;
+        self.pc = nnn as usize;
     }
 
     // Add VY to VX
@@ -154,8 +156,8 @@ impl Cpu {
     }
 
     // ANNN => sets I to last 12 bits of opcode
-    fn op_annn(&mut self, nnn: usize) {
-        self.i = nnn;
+    fn op_annn(&mut self, nnn: u16) {
+        self.i = nnn as usize;
         self.pc += 2;
         println!("{:?}", self);
     }
