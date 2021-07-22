@@ -9,7 +9,6 @@ fn build_cpu() -> Cpu {
 fn test_initialize() {
     let cpu = build_cpu();
     assert_eq!(cpu.pc, 0x200);
-    assert_eq!(cpu.sp, 0);
     assert_eq!(cpu.stack, [0; 16]);
 }
 

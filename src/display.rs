@@ -17,4 +17,6 @@ impl Display {
             *pixel = 0;
         }
     }
+
+    pub fn draw(&mut self, x: usize, y: usize, n: u8) {}
 }
