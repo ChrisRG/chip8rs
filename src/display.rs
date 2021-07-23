@@ -2,48 +2,48 @@
 // 64x32 display, each pixel can be only on or off
 // Setting of pixels accomplished through sprites,
 // which are always 8 X N (N is pixel height).
+// Font set sprites: characters 0-9 and A-F
+// to be printed directly within 8x5 grid.
 
 const WIDTH: usize = 64;
 const HEIGHT: usize = 32;
 
 pub struct Display {
-    screen: [u8; WIDTH * HEIGHT],
+    frame_buffer: [u8; WIDTH * HEIGHT],
 }
 
 impl Display {
     pub fn new() -> Display {
         Display {
-            screen: [0; WIDTH * HEIGHT],
+            frame_buffer: [0; WIDTH * HEIGHT],
         }
     }
 
     pub fn clear(&mut self) {
-        for pixel in self.screen.iter_mut() {
+        for pixel in self.frame_buffer.iter_mut() {
             *pixel = 0;
         }
     }
 
-    pub fn get_index(&self, coord_x: usize, coord_y: usize) -> usize {
-        coord_y * WIDTH + coord_x
-    }
-    pub fn draw(&mut self, x: usize, y: usize, byte: u8) {
-        let mut coord_x = x as usize;
-        let mut coord_y = y as usize;
-        let mut b = byte;
-
-        for _ in 0..8 {
-            coord_x %= WIDTH;
-            coord_y %= HEIGHT;
-            let index = self.get_index(coord_x, coord_y);
-            let bit = (b & 0b1000_0000) >> 7;
-            self.screen[index] ^= bit;
-
-            coord_x += 1;
-            b <<= 1;
-        }
+    pub fn get_index(&self, x: usize, y: usize) -> usize {
+        x + WIDTH * y
     }
 
-    pub fn get_display_buffer(&self) -> &[u8] {
-        &self.screen
+    // Set/unset pixels in display_buffer, return true/false if collision detected
+    pub fn draw(&mut self, x: usize, y: usize, sprite: &[u8]) -> bool {
+        // Sprite height can be between 1 and 15 bytes, sprite width is 8 bits
+        // Bit pattern shows which pixel to set/unset using XOR
+        // loop by byte/row: 0..sprite.len()
+        // loop by bit/col: 0..7
+        // val = (row >> 7) & 0x01
+        // 00000000
+        // 0
+        let mut collision = false;
+
+        return collision;
+    }
+
+    pub fn get_frame_buffer(&self) -> &[u8] {
+        &self.frame_buffer
     }
 }
