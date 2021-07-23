@@ -1,9 +1,8 @@
 use crate::display::Display;
-use crate::ram::Ram;
 use minifb::Key;
 
 pub struct Bus {
-    display: Display,
+    pub display: Display,
     pub key_pressed: Option<u8>,
 }
 

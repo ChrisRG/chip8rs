@@ -42,6 +42,7 @@ impl Cpu {
         let opcode = self.fetch_op();
         self.decode_op(opcode, bus);
         self.update_timers();
+        // println!("{:?}", self);
     }
     fn fetch_op(&mut self) -> u16 {
         // Load from self.pc (2 bytes), so fetch two successive bytes
@@ -67,50 +68,50 @@ impl Cpu {
         match nibbles {
             //
             (0x00, _, _, _) => match kk {
-                0xE0 => self.op_00e0(), // 00E0: Clear display
-                0xEE => self.op_00ee(), // 00EE: Return from subroutine
-                _ => self.op_0nnn(nnn), // 0nnn: jump to a machine code routine at nnn
-            },
-            (0x01, _, _, _) => self.op_1nnn(nnn), // 1nnn: Jump to location nnn.
-            (0x02, _, _, _) => self.op_2nnn(nnn), // 2nnn: Call subroutine at nnn.
-            (0x03, _, _, _) => self.op_3xkk(x, kk), // 3xkk: Skip next instruction if Vx = kk.
-            (0x04, _, _, _) => self.op_4xkk(x, kk), // 4xkk: Skip next instruction if Vx != kk.
-            (0x05, _, _, _) => self.op_5xy0(x, y), // 5xy0: Skip next instruction if Vx = Vy.
-            (0x06, _, _, _) => self.op_6xkk(x, kk), // 6xkk: Set Vx = kk.
-            (0x07, _, _, _) => self.op_7xkk(x, kk), // 7xkk: Set Vx = Vx + kk.
-            (0x08, _, _, _) => match n {
-                0x00 => self.op_8xy0(x, y), //  8xy0: Set Vx = Vy.
-                0x01 => self.op_8xy1(x, y), //  8xy1: Set Vx = Vx OR Vy.
-                0x02 => self.op_8xy2(x, y), //  8xy2: Set Vx = Vx AND Vy.
-                0x03 => self.op_8xy3(x, y), //  8xy3: Set Vx = Vx XOR Vy.
-                0x04 => self.op_8xy4(x, y), //  8xy4: Set Vx = Vx + Vy, set VF = carry.
-                0x05 => self.op_8xy5(x, y), //  8xy5: Set Vx = Vx - Vy, set VF = NOT borrow.
-                0x06 => self.op_8xy6(x),    //  8xy6: Set Vx = Vx SHR 1.
-                0x07 => self.op_8xy7(x, y), //  8xy7: Set Vx = Vy - Vx, set VF = NOT borrow.
-                0x0E => self.op_8xye(x),    //  8xyE: Set Vx = Vx SHL 1.
+                0xE0 => self.op_00e0(), // 00E0 - CLS: Clear display
+                0xEE => self.op_00ee(), // 00EE - RET : Return from subroutine
                 _ => println!("Unrecognized opcode {:?}", opcode),
             },
-            (0x09, _, _, _) => self.op_9xy0(x, y), // 9xy0: Skip next instruction if Vx != Vy.
-            (0x0A, _, _, _) => self.op_annn(nnn),  // ANNN: Set I to NNN
-            (0x0B, _, _, _) => self.op_bnnn(nnn),  // Bnnn: Jump to location nnn + V0.
-            (0x0C, _, _, _) => self.op_cxkk(x, kk), // Cxkk: Set Vx = random byte AND kk.
-            (0x0D, _, _, _) => self.op_dxyn(x, y, n), // Dxyn: Display n-byte sprite starting at memory location I at (Vx, Vy), set VF = collision.
+            (0x01, _, _, _) => self.op_1nnn(nnn), // 1NNN - JP addr: Jump to location nnn.
+            (0x02, _, _, _) => self.op_2nnn(nnn), // 2NNN - CALL addr: Call subroutine at nnn.
+            (0x03, _, _, _) => self.op_3xkk(x, kk), // 3XKK - SE Vx, byte: Skip next instruction if Vx = kk.
+            (0x04, _, _, _) => self.op_4xkk(x, kk), // 4XKK - SNE Vx, byte: Skip next instruction if Vx != kk.
+            (0x05, _, _, _) => self.op_5xy0(x, y), // 5XY0 - SE Vx, Vy: Skip next instruction if Vx = Vy.
+            (0x06, _, _, _) => self.op_6xkk(x, kk), // 6XKK - LD Vx, byte: Set Vx = kk.
+            (0x07, _, _, _) => self.op_7xkk(x, kk), // 7XKK - ADD Vx, byte: Set Vx = Vx + kk.
+            (0x08, _, _, _) => match n {
+                0x00 => self.op_8xy0(x, y), //  8XY0 - LD Vx, Vy: Set Vx = Vy.
+                0x01 => self.op_8xy1(x, y), //  8XY1 - OR Vx, Vy: Set Vx = Vx OR Vy.
+                0x02 => self.op_8xy2(x, y), //  8XY2 - AND Vx, Vy: Set Vx = Vx AND Vy.
+                0x03 => self.op_8xy3(x, y), //  8XY3 - XOR Vx, Vy: Set Vx = Vx XOR Vy.
+                0x04 => self.op_8xy4(x, y), //  8XY4 - ADD Vx, Vy: Set Vx = Vx + Vy, set VF = carry.
+                0x05 => self.op_8xy5(x, y), //  8XY5 - SUB Vx, Vy: Set Vx = Vx - Vy, set VF = NOT borrow.
+                0x06 => self.op_8xy6(x),    //  8XY6 - SHR Vx: Set Vx = Vx SHR 1.
+                0x07 => self.op_8xy7(x, y), //  8XY7 - SUBN Vx, Vy: Set Vx = Vy - Vx, set VF = NOT borrow.
+                0x0E => self.op_8xye(x),    //  8XYE - SHL Vx: Set Vx = Vx SHL 1.
+                _ => println!("Unrecognized opcode {:?}", opcode),
+            },
+            (0x09, _, _, _) => self.op_9xy0(x, y), // 9XY0 - SNE Vx, Vy: Skip next instruction if Vx != Vy.
+            (0x0A, _, _, _) => self.op_annn(nnn),  // ANNN - LD I, addr: Set I to NNN
+            (0x0B, _, _, _) => self.op_bnnn(nnn),  // BNNN - JP V0, addr: Jump to location nnn + V0.
+            (0x0C, _, _, _) => self.op_cxkk(x, kk), // CXKK - RND Vx, byte: Set Vx = random byte AND kk.
+            (0x0D, _, _, _) => self.op_dxyn(x, y, n), // DXYN - DRW, Vx, Vy, nibble: Display n-byte sprite starting at memory location I at (Vx, Vy), set VF = collision.
             (0x0E, _, _, _) => match kk {
-                0xA1 => self.op_exa1(x, bus), //  ExA1: Skip next instruction if key with the value of Vx is not pressed.
-                0x9E => self.op_ex9e(x, bus), //  Ex9E:  Skip next instruction if key with the value of Vx is pressed.
+                0x9E => self.op_ex9e(x, bus), //  Ex9E - SKP Vx:  Skip next instruction if key with the value of Vx is pressed.
+                0xA1 => self.op_exa1(x, bus), //  EXA1 - SKNP Vx: Skip next instruction if key with the value of Vx is not pressed.
 
                 _ => println!("Unrecognized opcode {:?}", opcode),
             },
             (0x0F, _, _, _) => match kk {
-                0x07 => self.op_fx07(x), //  Fx07: Set Vx = delay timer value. The value of DT is placed into Vx.
-                0x0A => self.op_fx0a(x, bus), //  Fx0A: Wait for a key press, store the value of the key in Vx.
-                0x15 => self.op_fx15(x),      //  Fx15: Set delay timer = Vx.
-                0x18 => self.op_fx18(x),      //  Fx18: Set sound timer = Vx.
-                0x1E => self.op_fx1e(x),      //  Fx1E: Set I = I + Vx.
-                0x29 => self.op_fx29(x),      //  Fx29: Set I = location of sprite for digit Vx.
-                0x33 => self.op_fx33(x), //  Fx33: Store BCD representation of Vx in memory locations I, I+1, and I+2.
-                0x55 => self.op_fx55(x), //  Fx55: Store registers V0 through Vx in memory starting at location I.
-                0x65 => self.op_fx65(x), //  Fx65: Read registers V0 through Vx from memory starting at location I.
+                0x07 => self.op_fx07(x), //  FX07 - LD Vx, DT: Set Vx = delay timer value. The value of DT is placed into Vx.
+                0x0A => self.op_fx0a(x, bus), //  FX0A - LD Vx, K: Wait for a key press, store the value of the key in Vx.
+                0x15 => self.op_fx15(x),      //  FX15 - LD DT, Vx: Set delay timer = Vx.
+                0x18 => self.op_fx18(x),      //  FX18 - LD ST, Vx: Set sound timer = Vx.
+                0x1E => self.op_fx1e(x),      //  FX1E - ADD I, Vx: Set I = I + Vx.
+                0x29 => self.op_fx29(x), //  FX29 - LD F, Vx: Set I = location of sprite for digit Vx.
+                0x33 => self.op_fx33(x), //  FX33 - LD B, Vx: Store BCD representation of Vx in memory locations I, I+1, and I+2.
+                0x55 => self.op_fx55(x), //  FX55 - LD [I], Vx: Store registers V0 through Vx in memory starting at location I.
+                0x65 => self.op_fx65(x), //  FX65 - Ld Vx, [I]: Read registers V0 through Vx from memory starting at location I.
                 _ => println!("Unrecognized opcode {:?}", opcode),
             },
             _ => println!("Unrecognized opcode {:?}", opcode),
@@ -125,7 +126,7 @@ impl Cpu {
             if self.sound_timer == 1 {
                 println!("BEEP!");
             }
-            self.delay_timer -= 1;
+            self.sound_timer -= 1;
         }
     }
 
