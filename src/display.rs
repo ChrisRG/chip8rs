@@ -35,7 +35,7 @@ impl Display {
         // Bit pattern shows which pixel to set/unset using XOR
         // loop by byte/row: 0..sprite.len()
         // loop by bit/col: 0..7
-        // val = (row >> 7) & 0x01
+        // val = (row >> 7 - bit) & 0x01
         // 00000000
         // 0
         let mut collision = false;
