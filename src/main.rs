@@ -1,40 +1,47 @@
 mod bus;
+mod chip8;
 mod cpu;
 mod display;
 mod font;
 mod ram;
-mod test;
-use std::{thread, time};
+use std::time::{Duration, Instant};
 
 use std::{fs::File, io::Read};
 
-use bus::Bus;
-use cpu::Cpu;
-
 use minifb::{Key, KeyRepeat, Window, WindowOptions};
 
-const WIDTH: usize = 640;
-const HEIGHT: usize = 320;
+use crate::chip8::Chip8;
+
+const SCREEN_WIDTH: usize = 640;
+const SCREEN_HEIGHT: usize = 320;
 fn main() {
     println!("Starting CHIP-8 emulator...");
-    let mut bus = Bus::new();
-    let mut cpu = Cpu::new();
+    let mut chip8 = Chip8::new();
 
-    // let mut file = File::open("./src/roms/pong.ch8").unwrap();
-    // let mut data = Vec::<u8>::new();
-    // file.read_to_end(&mut data).expect("File not found!");
+    let mut file = File::open("./src/roms/pong.ch8").unwrap();
+    let mut data = Vec::<u8>::new();
+    file.read_to_end(&mut data).expect("File not found!");
 
-    cpu.load_rom(test::TEST_E.to_vec());
+    // chip8.load_rom(&test::TEST_E.to_vec());
+    chip8.load_rom(&data);
 
-    let mut window = Window::new("CHIP8RS", WIDTH, HEIGHT, WindowOptions::default())
-        .unwrap_or_else(|e| {
-            panic!("Window creation failed: {:?}", e);
-        });
+    let mut window = Window::new(
+        "CHIP8RS",
+        SCREEN_WIDTH,
+        SCREEN_HEIGHT,
+        WindowOptions::default(),
+    )
+    .unwrap_or_else(|e| {
+        panic!("Window creation failed: {:?}", e);
+    });
 
-    let mut buffer: Vec<u32> = vec![0; WIDTH * HEIGHT];
+    let mut buffer: Vec<u32> = vec![0; SCREEN_WIDTH * SCREEN_HEIGHT];
+
+    let mut last_key_update_time = Instant::now();
+    let mut last_instruction_run_time = Instant::now();
+    let mut last_display_time = Instant::now();
 
     while window.is_open() && !window.is_key_down(Key::Escape) {
-        // window.update();
         let keys_pressed = window.get_keys_pressed(KeyRepeat::Yes);
         let key = match keys_pressed {
             Some(keys) => {
@@ -46,30 +53,34 @@ fn main() {
             }
             None => None,
         };
-        bus.set_key_pressed(key);
 
-        let chip8_buffer = bus.display.get_frame_buffer();
-        for y in 0..HEIGHT {
-            let y_coord = y / 10;
-            let offset = y * WIDTH;
-            for x in 0..WIDTH {
-                let index = bus.display.get_index(x / 10, y_coord);
-                let pixel = chip8_buffer[index];
-                let color_pixel = match pixel {
-                    0 => 0x0,
-                    1 => 0xffffff,
-                    _ => unreachable!(),
-                };
-                buffer[offset + x] = color_pixel;
-            }
+        if key.is_some() || Instant::now() - last_key_update_time >= Duration::from_millis(200) {
+            last_key_update_time = Instant::now();
+            chip8.set_key_pressed(key);
         }
 
-        window.update_with_buffer(&buffer, WIDTH, HEIGHT);
+        if Instant::now() - last_instruction_run_time > Duration::from_millis(2) {
+            chip8.execute_cycle();
+            last_instruction_run_time = Instant::now();
+        }
 
-        cpu.execute_cycle(&bus);
-        println!("{:?}", cpu);
-        let millis = time::Duration::from_millis(100);
+        if Instant::now() - last_display_time > Duration::from_millis(10) {
+            let chip8_buffer = chip8.get_frame_buffer();
+            for y in 0..SCREEN_HEIGHT {
+                for x in 0..SCREEN_WIDTH {
+                    let index = chip8.get_frame_index(x / 10, y / 10);
+                    let pixel = chip8_buffer[index];
 
-        thread::sleep(millis);
+                    let color = if pixel == 1 { 0x00ff00 } else { 0x0 };
+                    let offset = y * SCREEN_WIDTH + x;
+                    buffer[offset] = color;
+                }
+            }
+
+            window
+                .update_with_buffer(&buffer, SCREEN_WIDTH, SCREEN_HEIGHT)
+                .unwrap();
+            last_display_time = Instant::now();
+        }
     }
 }

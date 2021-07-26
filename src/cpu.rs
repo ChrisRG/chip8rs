@@ -1,15 +1,13 @@
 use crate::bus::Bus;
-use crate::display::Display;
 use crate::ram::Ram;
 use rand;
 use rand::Rng;
 use std::fmt;
 
-const WIDTH: usize = 64;
-const HEIGHT: usize = 32;
+// const WIDTH: usize = 64;
+// const HEIGHT: usize = 32;
 
 pub struct Cpu {
-    display: Display,
     ram: Ram,
     pc: usize,
     v: [u8; 16],
@@ -23,7 +21,6 @@ impl Cpu {
     pub fn new() -> Self {
         Self {
             ram: Ram::new(),
-            display: Display::new(),
             pc: 0x200,
             v: [0x00; 16],
             i: 0,
@@ -33,10 +30,11 @@ impl Cpu {
         }
     }
 
-    pub fn load_rom(&mut self, rom: Vec<u8>) {
+    pub fn load_rom(&mut self, rom: &Vec<u8>) {
         self.ram.load_rom(rom);
     }
-    pub fn execute_cycle(&mut self, bus: &Bus) {
+
+    pub fn execute_cycle(&mut self, bus: &mut Bus) {
         let opcode = self.fetch_op();
         self.decode_op(opcode, bus);
         self.update_timers();
@@ -48,7 +46,7 @@ impl Cpu {
         let opcode = hi_byte << 8 | lo_byte;
         opcode
     }
-    fn decode_op(&mut self, opcode: u16, bus: &Bus) {
+    fn decode_op(&mut self, opcode: u16, bus: &mut Bus) {
         // Break up 2byte opcode into nibbles and bytes
         let nibbles = (
             ((opcode & 0xF000) >> 12) as u8,
@@ -64,8 +62,8 @@ impl Cpu {
         match nibbles {
             //
             (0x00, _, _, _) => match kk {
-                0xE0 => self.op_00e0(), // 00E0 - CLS: Clear display
-                0xEE => self.op_00ee(), // 00EE - RET : Return from subroutine
+                0xE0 => self.op_00e0(bus), // 00E0 - CLS: Clear display
+                0xEE => self.op_00ee(),    // 00EE - RET : Return from subroutine
                 _ => println!("Unrecognized opcode {:?}", opcode),
             },
             (0x01, _, _, _) => self.op_1nnn(nnn), // 1NNN - JP addr: Jump to location nnn.
@@ -91,7 +89,7 @@ impl Cpu {
             (0x0A, _, _, _) => self.op_annn(nnn),  // ANNN - LD I, addr: Set I to NNN
             (0x0B, _, _, _) => self.op_bnnn(nnn),  // BNNN - JP V0, addr: Jump to location nnn + V0.
             (0x0C, _, _, _) => self.op_cxkk(x, kk), // CXKK - RND Vx, byte: Set Vx = random byte AND kk.
-            (0x0D, _, _, _) => self.op_dxyn(x, y, n), // DXYN - DRW, Vx, Vy, nibble: Display n-byte sprite starting at memory location I at (Vx, Vy), set VF = collision.
+            (0x0D, _, _, _) => self.op_dxyn(bus, x, y, n), // DXYN - DRW, Vx, Vy, nibble: Display n-byte sprite starting at memory location I at (Vx, Vy), set VF = collision.
             (0x0E, _, _, _) => match kk {
                 0x9E => self.op_ex9e(x, bus), //  Ex9E - SKP Vx:  Skip next instruction if key with the value of Vx is pressed.
                 0xA1 => self.op_exa1(x, bus), //  EXA1 - SKNP Vx: Skip next instruction if key with the value of Vx is not pressed.
@@ -126,8 +124,8 @@ impl Cpu {
         }
     }
 
-    fn op_00e0(&mut self) {
-        self.display.clear();
+    fn op_00e0(&mut self, bus: &mut Bus) {
+        bus.display.clear();
         self.pc += 2;
     }
 
@@ -137,9 +135,9 @@ impl Cpu {
         self.pc = address;
     }
 
-    fn op_0nnn(&mut self, nnn: u16) {
-        self.pc = nnn as usize;
-    }
+    // fn op_0nnn(&mut self, nnn: u16) {
+    //     self.pc = nnn as usize;
+    // }
 
     //  The interpreter sets the program counter to nnn.
     fn op_1nnn(&mut self, nnn: u16) {
@@ -227,10 +225,8 @@ impl Cpu {
 
     // If Vx > Vy, then VF is set to 1, otherwise 0. Then Vy is subtracted from Vx, and the results stored in Vx.
     fn op_8xy5(&mut self, x: usize, y: usize) {
-        let result = self.v[x] as u16 - self.v[y] as u16;
-        let carry_flag = if result < 0 { 1 } else { 0 };
-        self.v[x] = result as u8;
-        self.v[0xf] = carry_flag;
+        self.v[0xf] = if self.v[x] > self.v[y] { 1 } else { 0 };
+        self.v[x] = self.v[x].wrapping_sub(self.v[y]);
         self.pc += 2;
     }
 
@@ -243,10 +239,8 @@ impl Cpu {
 
     //  If Vy > Vx, then VF is set to 1, otherwise 0. Then Vx is subtracted from Vy, and the results stored in Vx.
     fn op_8xy7(&mut self, x: usize, y: usize) {
-        let result = self.v[y] - self.v[x];
-        let carry_flag = if result < 0 { 1 } else { 0 };
-        self.v[x] = result;
-        self.v[0xf] = carry_flag;
+        self.v[0xf] = if self.v[y] > self.v[x] { 1 } else { 0 };
+        self.v[x] = self.v[y].wrapping_sub(self.v[x]);
         self.pc += 2;
     }
 
@@ -291,10 +285,11 @@ impl Cpu {
     // These bytes are then displayed as sprites on screen at coordinates (Vx, Vy).
     // Sprites are XORed onto the existing screen. If this causes any pixels to be erased, VF is set to 1, otherwise it is set to 0.
     // If the sprite is positioned so part of it is outside the coordinates of the display, it wraps around to the opposite side of the screen. See instruction 8xy3 for more information on XOR, and section 2.4, Display, for more information on the Chip-8 screen and sprites.
-    fn op_dxyn(&mut self, x: usize, y: usize, n: u8) {
+    fn op_dxyn(&mut self, bus: &mut Bus, x: usize, y: usize, n: u8) {
+        self.v[0xF] = 0;
         let sprite = self.ram.read_bytes(self.i, self.i + n as usize);
 
-        let collision = self
+        let collision = bus
             .display
             .draw(self.v[x] as usize, self.v[y] as usize, sprite);
         self.v[0xF] = if collision { 1 } else { 0 };
@@ -303,7 +298,8 @@ impl Cpu {
 
     //  ExA1: Skip next instruction if key with the value of Vx is NOT pressed.
     fn op_exa1(&mut self, x: usize, bus: &Bus) {
-        if !bus.is_key_pressed(self.v[x]) {
+        let key = self.v[x];
+        if !bus.is_key_pressed(key) {
             self.pc += 4;
         } else {
             self.pc += 2;
@@ -312,10 +308,8 @@ impl Cpu {
 
     // Skip next instruction if key with the value of Vx is pressed.
     fn op_ex9e(&mut self, x: usize, bus: &Bus) {
-        self.v[0] = 0; // X key
-        self.v[1] = 7; //
-        if bus.is_key_pressed(self.v[x]) {
-            println!("Pressed");
+        let key = self.v[x];
+        if bus.is_key_pressed(key) {
             self.pc += 4;
         } else {
             self.pc += 2;
@@ -402,7 +396,3 @@ impl fmt::Debug for Cpu {
         write!(f, "I: {:#X}", self.i)
     }
 }
-
-#[cfg(test)]
-#[path = "./tests/cpu_tests.rs"]
-mod cpu_tests;

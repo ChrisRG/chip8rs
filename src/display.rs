@@ -40,6 +40,20 @@ impl Display {
         // 0
         let mut collision = false;
 
+        for (i, row) in sprite.iter().enumerate() {
+            let y_coord = (y + i) % 32;
+            for col in 0..8 {
+                let val = (*row >> 7 - col) & 0x01;
+                let x_coord = (x + col) % 64;
+                let offset = self.get_index(x_coord, y_coord);
+                let prev_val = self.frame_buffer[offset];
+                self.frame_buffer[offset] ^= val;
+                if prev_val == 1 && self.frame_buffer[offset] == 0 {
+                    collision = true;
+                }
+            }
+        }
+
         return collision;
     }
 
