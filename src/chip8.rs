@@ -35,4 +35,8 @@ impl Chip8 {
     pub fn set_key_pressed(&mut self, key: Option<Key>) {
         self.bus.set_key_pressed(key);
     }
+
+    pub fn should_beep(&self) -> bool {
+        self.cpu.should_beep()
+    }
 }

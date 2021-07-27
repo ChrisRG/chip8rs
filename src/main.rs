@@ -6,6 +6,8 @@ mod font;
 mod ram;
 use std::time::{Duration, Instant};
 
+use rodio::{OutputStream, Sink};
+
 use std::{fs::File, io::Read};
 
 use minifb::{Key, KeyRepeat, Window, WindowOptions};
@@ -22,7 +24,6 @@ fn main() {
     let mut data = Vec::<u8>::new();
     file.read_to_end(&mut data).expect("File not found!");
 
-    // chip8.load_rom(&test::TEST_E.to_vec());
     chip8.load_rom(&data);
 
     let mut window = Window::new(
@@ -34,6 +35,13 @@ fn main() {
     .unwrap_or_else(|e| {
         panic!("Window creation failed: {:?}", e);
     });
+
+    // Sound
+    let (_stream, stream_handle) = OutputStream::try_default().unwrap();
+    let sink = Sink::try_new(&stream_handle).unwrap();
+    let source = rodio::source::SineWave::new(400);
+    sink.append(source);
+    sink.pause();
 
     let mut buffer: Vec<u32> = vec![0; SCREEN_WIDTH * SCREEN_HEIGHT];
 
@@ -81,6 +89,11 @@ fn main() {
                 .update_with_buffer(&buffer, SCREEN_WIDTH, SCREEN_HEIGHT)
                 .unwrap();
             last_display_time = Instant::now();
+        }
+        if chip8.should_beep() {
+            sink.play();
+        } else {
+            sink.pause();
         }
     }
 }

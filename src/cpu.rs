@@ -3,10 +3,6 @@ use crate::ram::Ram;
 use rand;
 use rand::Rng;
 use std::fmt;
-
-// const WIDTH: usize = 64;
-// const HEIGHT: usize = 32;
-
 pub struct Cpu {
     ram: Ram,
     pc: usize,
@@ -117,11 +113,12 @@ impl Cpu {
             self.delay_timer -= 1;
         }
         if self.sound_timer > 0 {
-            if self.sound_timer == 1 {
-                println!("BEEP!");
-            }
             self.sound_timer -= 1;
         }
+    }
+
+    pub fn should_beep(&self) -> bool {
+        self.sound_timer > 0
     }
 
     fn op_00e0(&mut self, bus: &mut Bus) {
