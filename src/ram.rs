@@ -4,7 +4,7 @@ const RAM_SIZE: usize = 4096;
 const START_ROM: usize = 512; // 0x200
 
 pub struct Ram {
-    memory: [u8; RAM_SIZE],
+    pub memory: [u8; RAM_SIZE],
 }
 
 impl Ram {

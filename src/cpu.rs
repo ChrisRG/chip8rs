@@ -4,7 +4,7 @@ use rand;
 use rand::Rng;
 use std::fmt;
 pub struct Cpu {
-    ram: Ram,
+    pub ram: Ram,
     pc: usize,
     v: [u8; 16],
     i: usize,

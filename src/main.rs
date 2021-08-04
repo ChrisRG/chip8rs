@@ -1,6 +1,7 @@
 mod bus;
 mod chip8;
 mod cpu;
+mod disassembler;
 mod display;
 mod font;
 mod ram;
@@ -20,12 +21,14 @@ fn main() {
     println!("Starting CHIP-8 emulator...");
     let mut chip8 = Chip8::new();
 
-    let mut file = File::open("./src/roms/breakout.ch8").unwrap();
+    let mut file = File::open("./src/roms/pong.ch8").unwrap();
     let mut data = Vec::<u8>::new();
     file.read_to_end(&mut data).expect("File not found!");
 
     chip8.load_rom(&data);
+    chip8.disassemble();
 
+    /*
     let mut window = Window::new(
         "CHIP8RS",
         SCREEN_WIDTH,
@@ -96,4 +99,5 @@ fn main() {
             sink.pause();
         }
     }
+    */
 }

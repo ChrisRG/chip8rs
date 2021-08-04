@@ -1,7 +1,10 @@
+use std::error::Error;
+
 use minifb::Key;
 
 use crate::bus::Bus;
 use crate::cpu::Cpu;
+use crate::disassembler::Disassembler;
 
 pub struct Chip8 {
     bus: Bus,
@@ -14,6 +17,15 @@ impl Chip8 {
             bus: Bus::new(),
             cpu: Cpu::new(),
         }
+    }
+
+    pub fn disassemble(&self) {
+        let disassembler = Disassembler::new(&self.cpu);
+        let result = disassembler.run();
+        match result {
+            Ok(_) => println!("ROM disassembled."),
+            Err(_) => println!("Error in disassembling ROM."),
+        };
     }
 
     pub fn load_rom(&mut self, rom: &Vec<u8>) {
