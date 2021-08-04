@@ -1,5 +1,3 @@
-use std::error::Error;
-
 use minifb::Key;
 
 use crate::bus::Bus;
@@ -19,8 +17,8 @@ impl Chip8 {
         }
     }
 
-    pub fn disassemble(&self) {
-        let disassembler = Disassembler::new(&self.cpu);
+    pub fn disassemble(&self, rom: &Vec<u8>) {
+        let disassembler = Disassembler::new(rom);
         let result = disassembler.run();
         match result {
             Ok(_) => println!("ROM disassembled."),

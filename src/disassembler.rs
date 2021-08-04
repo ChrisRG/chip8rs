@@ -1,21 +1,43 @@
-use crate::cpu::Cpu;
+use crate::ram::Ram;
 
 pub struct Disassembler<'a> {
-    cpu: &'a Cpu,
+    pub ram: Ram,
+    // pc: usize,
+    // v: [u8; 16],
+    // i: usize,
+    // stack: Vec<usize>,
+    // delay_timer: u8,
+    // sound_timer: u8,
+    rom: &'a Vec<u8>,
 }
 
 impl<'a> Disassembler<'a> {
-    pub fn new(cpu: &'a Cpu) -> Self {
-        Self { cpu }
+    pub fn new(rom: &'a Vec<u8>) -> Self {
+        let mut ram = Ram::new();
+        ram.load_rom(rom);
+        Self {
+            ram,
+            // pc: 0x200,
+            // v: [0x00; 16],
+            // i: 0,
+            // stack: Vec::new(),
+            // delay_timer: 0,
+            // sound_timer: 0,
+            rom,
+        }
     }
 
     pub fn run(&self) -> Result<(), &'a str> {
-        for (idx, opcode) in self.cpu.ram.memory[0x200..0x30A].chunks(2).enumerate() {
-            let combined_opcode = (opcode[0] as u16) << 8 | opcode[1] as u16;
-            let decoded = self.decode(combined_opcode);
-            // let hi_byte = format!("{:01$x}", opcode[0], 2);
-            // let lo_byte = format!("{:01$x}", opcode[1], 2);
-            println!("[{}]: {}", idx + 0x200, decoded);
+        for (idx, _) in self.rom.iter().enumerate() {
+            // Check opcodes only at even address
+            if idx & 1 == 0 {
+                let hi_byte = self.rom[idx];
+                let lo_byte = self.rom[idx + 1];
+                let opcode = (hi_byte as u16) << 8 | lo_byte as u16;
+                let instruction = self.decode(opcode);
+                // ROM starts at address 512
+                let result = format!("[{}]: {}", idx + 512, instruction);
+            }
         }
         Ok(())
     }
@@ -34,7 +56,6 @@ impl<'a> Disassembler<'a> {
         let kk = (opcode & 0x00FF) as u8;
         let nnn = opcode & 0x0FFF;
         let result = match nibbles {
-            //
             (0x00, _, _, _) => match kk {
                 0xE0 => String::from("CLS"), // 00E0 - CLS: Clear display
                 0xEE => String::from("RET"), // 00EE - RET : Return from subroutine

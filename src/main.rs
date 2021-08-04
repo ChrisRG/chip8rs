@@ -26,9 +26,8 @@ fn main() {
     file.read_to_end(&mut data).expect("File not found!");
 
     chip8.load_rom(&data);
-    chip8.disassemble();
+    chip8.disassemble(&data);
 
-    /*
     let mut window = Window::new(
         "CHIP8RS",
         SCREEN_WIDTH,
@@ -99,5 +98,4 @@ fn main() {
             sink.pause();
         }
     }
-    */
 }
