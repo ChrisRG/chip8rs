@@ -29,9 +29,9 @@ impl Chip8 {
         }
     }
 
-    pub fn disassemble(&self, disassemble_file: String) {
+    pub fn disassemble(&self, rom_name: String) {
         let disassembler = Disassembler::new(&self.rom);
-        let result = disassembler.run();
+        let result = disassembler.run(rom_name);
         match result {
             Ok(_) => println!("ROM disassembly written."),
             Err(_) => println!("Error in disassembling ROM."),
@@ -65,7 +65,7 @@ impl Chip8 {
         self.cpu.should_beep()
     }
 
-    pub fn get_registers(&self) -> &[u8] {
-        &self.cpu.v
-    }
+    // pub fn get_registers(&self) -> &[u8] {
+    //     &self.cpu.v
+    // }
 }

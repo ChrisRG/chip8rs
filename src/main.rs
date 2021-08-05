@@ -28,10 +28,10 @@ fn main() {
     let matches = App::from_yaml(yaml).get_matches();
 
     let rom_file = matches.value_of("INPUT").unwrap().to_string();
-    let mut chip8 = Chip8::new(rom_file);
+    let mut chip8 = Chip8::new(rom_file.clone());
 
-    if let Some(disassemble_file) = matches.value_of("disassemble") {
-        chip8.disassemble(disassemble_file.to_string());
+    if matches.is_present("disassemble") {
+        chip8.disassemble(rom_file);
     }
 
     let mut window = Window::new(

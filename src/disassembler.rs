@@ -1,13 +1,12 @@
 use crate::ram::Ram;
+use std::fs::File;
+use std::io::Write;
+use std::path::Path;
+
+const START_ROM: usize = 512; // 0x200
 
 pub struct Disassembler {
     pub ram: Ram,
-    // pc: usize,
-    // v: [u8; 16],
-    // i: usize,
-    // stack: Vec<usize>,
-    // delay_timer: u8,
-    // sound_timer: u8,
     rom_size: usize,
 }
 
@@ -15,32 +14,54 @@ impl Disassembler {
     pub fn new(rom: &Vec<u8>) -> Self {
         Self {
             ram: Ram::new(rom),
-            // pc: 0x200,
-            // v: [0x00; 16],
-            // i: 0,
-            // stack: Vec::new(),
-            // delay_timer: 0,
-            // sound_timer: 0,
-            rom_size: rom.len(),
+            rom_size: rom.len() + START_ROM,
         }
     }
 
-    pub fn run(&self) -> Result<(), String> {
-        for idx in 0..self.rom_size {
-            // Check opcodes only at even address
+    pub fn run(&self, rom_name: String) -> Result<(), String> {
+        let mut opcode_buffer = vec![String::from(""); self.rom_size];
+        println!("Running disasssembler");
+        for idx in START_ROM..self.rom_size {
+            // Check opcodes only at even addresses to prevent overflow
             if idx & 1 == 0 && idx + 1 < self.rom_size {
-                let hi_byte = self.ram.read_byte(idx);
-                let lo_byte = self.ram.read_byte(idx + 1);
-                let opcode = (hi_byte as u16) << 8 | lo_byte as u16;
-                let instruction = self.decode(opcode);
-                // ROM starts at address 512
-                let result = format!("[{}]: {}", idx + 512, instruction);
+                let opcode = self.fetch_op(idx);
+                let instruction = format!("[{}]: {}", idx, self.decode_op(opcode));
+                println!("{}", instruction);
+                opcode_buffer[idx] = instruction;
             }
         }
+        match self.write_file(rom_name, opcode_buffer) {
+            Ok(_) => Ok(()),
+            Err(e) => Err(format!("Error {}", e)),
+        }
+    }
+
+    fn write_file(&self, rom_name: String, buffer: Vec<String>) -> Result<(), String> {
+        let file_name = self.parse_path(rom_name);
+        let path = Path::new(&file_name);
+        let display = path.display();
+
+        let mut file = match File::create(&path) {
+            Err(e) => panic!("Couldn't create {}: {}", display, e),
+            Ok(file) => file,
+        };
+
+        writeln!(file, "{}", buffer.join("\n")).unwrap();
         Ok(())
     }
 
-    fn decode(&self, opcode: u16) -> String {
+    fn parse_path(&self, rom_name: String) -> String {
+        let file_name: Vec<_> = rom_name.split(".ch8").collect();
+        return format!("{}.chasm", file_name[0]);
+    }
+
+    fn fetch_op(&self, idx: usize) -> u16 {
+        let hi_byte = self.ram.memory[idx];
+        let lo_byte = self.ram.memory[idx + 1];
+        return (hi_byte as u16) << 8 | lo_byte as u16;
+    }
+
+    fn decode_op(&self, opcode: u16) -> String {
         let nibbles = (
             ((opcode & 0xF000) >> 12) as u8,
             ((opcode & 0x0F00) >> 8) as u8,

@@ -6,8 +6,7 @@ args:
     - disassemble:
         short: d
         long: disassemble
-        takes_value: true
-        help: Generates an assembly file of the ROM 
+        help: Generates an assembly file with the same name as the ROM in /chasm/
     - INPUT:
         help: Sets the input file to use
         required: true

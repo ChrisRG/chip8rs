@@ -12,7 +12,7 @@ pub struct Cpu {
     delay_timer: u8,
     sound_timer: u8,
     draw_flag: bool,
-    paused: bool,
+    // paused: bool,
 }
 
 impl Cpu {
@@ -26,7 +26,7 @@ impl Cpu {
             delay_timer: 0,
             sound_timer: 0,
             draw_flag: false,
-            paused: false,
+            // paused: false,
         }
     }
 
