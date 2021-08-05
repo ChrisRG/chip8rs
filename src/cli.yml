@@ -1,4 +1,4 @@
-name: myapp
+name: chip8rs
 version: "0.1"
 author: Chris G. <chris.geekie@gmail.com>
 about: Basic CHIP8 emulator in Rust
@@ -6,7 +6,7 @@ args:
     - disassemble:
         short: d
         long: disassemble
-        help: Generates an assembly file with the same name as the ROM in /chasm/
+        help: Generates a CHIP8 assembly (.chasm) file with the same name as the input ROM
     - INPUT:
         help: Sets the input file to use
         required: true

@@ -33,14 +33,10 @@ impl Chip8 {
         let disassembler = Disassembler::new(&self.rom);
         let result = disassembler.run(rom_name);
         match result {
-            Ok(_) => println!("ROM disassembly written."),
-            Err(_) => println!("Error in disassembling ROM."),
+            Ok(_) => println!("ROM disassembly written to file"),
+            Err(_) => println!("Error in disassembling ROM"),
         };
     }
-
-    // pub fn load_rom(&mut self, rom: &Vec<u8>) {
-    //     self.cpu.load_rom(rom);
-    // }
 
     pub fn execute_cycle(&mut self) {
         self.cpu.execute_cycle(&mut self.bus);
@@ -64,8 +60,4 @@ impl Chip8 {
     pub fn should_beep(&self) -> bool {
         self.cpu.should_beep()
     }
-
-    // pub fn get_registers(&self) -> &[u8] {
-    //     &self.cpu.v
-    // }
 }

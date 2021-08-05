@@ -19,15 +19,14 @@ impl Disassembler {
     }
 
     pub fn run(&self, rom_name: String) -> Result<(), String> {
-        let mut opcode_buffer = vec![String::from(""); self.rom_size];
-        println!("Running disasssembler");
+        let mut opcode_buffer = Vec::new();
         for idx in START_ROM..self.rom_size {
             // Check opcodes only at even addresses to prevent overflow
+            // Possible problems since some ROMs include binary data at various addresses
             if idx & 1 == 0 && idx + 1 < self.rom_size {
                 let opcode = self.fetch_op(idx);
                 let instruction = format!("[{}]: {}", idx, self.decode_op(opcode));
-                println!("{}", instruction);
-                opcode_buffer[idx] = instruction;
+                opcode_buffer.push(instruction);
             }
         }
         match self.write_file(rom_name, opcode_buffer) {
@@ -36,7 +35,7 @@ impl Disassembler {
         }
     }
 
-    fn write_file(&self, rom_name: String, buffer: Vec<String>) -> Result<(), String> {
+    fn write_file(&self, rom_name: String, buffer: Vec<String>) -> std::io::Result<()> {
         let file_name = self.parse_path(rom_name);
         let path = Path::new(&file_name);
         let display = path.display();
@@ -46,7 +45,7 @@ impl Disassembler {
             Ok(file) => file,
         };
 
-        writeln!(file, "{}", buffer.join("\n")).unwrap();
+        writeln!(file, "{}", buffer.join("\n"))?;
         Ok(())
     }
 
