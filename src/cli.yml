@@ -7,6 +7,14 @@ args:
         short: d
         long: disassemble
         help: Generates a CHIP8 assembly (.chasm) file with the same name as the input ROM
+        conflicts_with:
+            - assemble
+    - assemble:
+        short: a
+        long: assemble
+        help: Compiles a CHIP8 assembly (.chasm) file to byte code (.ch8) with the same name as the input
+        conflicts_with:
+            - disassemble
     - INPUT:
         help: Sets the input file to use
         required: true

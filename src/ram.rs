@@ -26,13 +26,6 @@ impl Ram {
         Self { memory }
     }
 
-    // pub fn load_rom(&mut self, rom: &Vec<u8>) {
-    //     let buffer_size = rom.len();
-    //     for i in 0..buffer_size {
-    //         self.write_byte(i + START_ROM, rom[i]);
-    //     }
-    // }
-
     pub fn write_byte(&mut self, index: usize, byte: u8) {
         self.memory[index] = byte;
     }

@@ -1,3 +1,4 @@
+mod assembler;
 mod bus;
 mod chip8;
 mod cpu;
@@ -21,7 +22,9 @@ fn main() {
 
     if matches.is_present("disassemble") {
         chip8.disassemble();
+    } else if matches.is_present("assemble") {
+        chip8.assemble();
+    } else {
+        chip8.run();
     }
-
-    chip8.run();
 }

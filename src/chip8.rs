@@ -1,4 +1,5 @@
 use core::time;
+use std::fs;
 use std::{fs::File, io::Read};
 use std::{
     thread,
@@ -9,6 +10,7 @@ use rodio::{OutputStream, Sink};
 
 use minifb::{Key, KeyRepeat, Window, WindowOptions};
 
+use crate::assembler::Assembler;
 use crate::bus::Bus;
 use crate::cpu::Cpu;
 use crate::disassembler::Disassembler;
@@ -127,6 +129,16 @@ impl Chip8 {
         match result {
             Ok(_) => println!("ROM disassembly written to file"),
             Err(_) => println!("Error in disassembling ROM"),
+        };
+    }
+
+    pub fn assemble(&self) {
+        let source = fs::read_to_string(self.rom_filepath.clone()).expect("Unable to read file.");
+        let mut assembler = Assembler::new(source);
+        let result = assembler.run();
+        match result {
+            Ok(_) => println!("File assembled to bytecode"),
+            Err(_) => println!("Error in assembling bytecode"),
         };
     }
 
