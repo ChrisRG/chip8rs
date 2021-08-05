@@ -9,3 +9,4 @@ edition = "2018"
 minifb = "0.19.3"
 rand = "0.8.4"
 rodio = "0.14.0"
+clap = {version = "2.33", features = ["yaml"]}

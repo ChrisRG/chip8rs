@@ -1,6 +1,6 @@
 use crate::ram::Ram;
 
-pub struct Disassembler<'a> {
+pub struct Disassembler {
     pub ram: Ram,
     // pc: usize,
     // v: [u8; 16],
@@ -8,31 +8,29 @@ pub struct Disassembler<'a> {
     // stack: Vec<usize>,
     // delay_timer: u8,
     // sound_timer: u8,
-    rom: &'a Vec<u8>,
+    rom_size: usize,
 }
 
-impl<'a> Disassembler<'a> {
-    pub fn new(rom: &'a Vec<u8>) -> Self {
-        let mut ram = Ram::new();
-        ram.load_rom(rom);
+impl Disassembler {
+    pub fn new(rom: &Vec<u8>) -> Self {
         Self {
-            ram,
+            ram: Ram::new(rom),
             // pc: 0x200,
             // v: [0x00; 16],
             // i: 0,
             // stack: Vec::new(),
             // delay_timer: 0,
             // sound_timer: 0,
-            rom,
+            rom_size: rom.len(),
         }
     }
 
-    pub fn run(&self) -> Result<(), &'a str> {
-        for (idx, _) in self.rom.iter().enumerate() {
+    pub fn run(&self) -> Result<(), String> {
+        for idx in 0..self.rom_size {
             // Check opcodes only at even address
-            if idx & 1 == 0 {
-                let hi_byte = self.rom[idx];
-                let lo_byte = self.rom[idx + 1];
+            if idx & 1 == 0 && idx + 1 < self.rom_size {
+                let hi_byte = self.ram.read_byte(idx);
+                let lo_byte = self.ram.read_byte(idx + 1);
                 let opcode = (hi_byte as u16) << 8 | lo_byte as u16;
                 let instruction = self.decode(opcode);
                 // ROM starts at address 512

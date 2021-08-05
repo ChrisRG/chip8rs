@@ -5,32 +5,37 @@ use rand::Rng;
 use std::fmt;
 pub struct Cpu {
     pub ram: Ram,
-    pc: usize,
-    v: [u8; 16],
-    i: usize,
+    pub pc: usize,
+    pub v: [u8; 16],
+    pub i: usize,
     stack: Vec<usize>,
     delay_timer: u8,
     sound_timer: u8,
+    draw_flag: bool,
+    paused: bool,
 }
 
 impl Cpu {
-    pub fn new() -> Self {
+    pub fn new(rom_buffer: &Vec<u8>) -> Self {
         Self {
-            ram: Ram::new(),
+            ram: Ram::new(rom_buffer),
             pc: 0x200,
             v: [0x00; 16],
             i: 0,
             stack: Vec::new(),
             delay_timer: 0,
             sound_timer: 0,
+            draw_flag: false,
+            paused: false,
         }
     }
 
-    pub fn load_rom(&mut self, rom: &Vec<u8>) {
-        self.ram.load_rom(rom);
-    }
+    // pub fn load_rom(&mut self, rom: &Vec<u8>) {
+    //     self.ram.load_rom(rom);
+    // }
 
     pub fn execute_cycle(&mut self, bus: &mut Bus) {
+        self.draw_flag = false;
         let opcode = self.fetch_op();
         self.decode_op(opcode, bus);
         self.update_timers();
@@ -119,6 +124,10 @@ impl Cpu {
 
     pub fn should_beep(&self) -> bool {
         self.sound_timer > 0
+    }
+
+    pub fn should_redraw(&self) -> bool {
+        self.draw_flag
     }
 
     fn op_00e0(&mut self, bus: &mut Bus) {
@@ -290,6 +299,7 @@ impl Cpu {
             .display
             .draw(self.v[x] as usize, self.v[y] as usize, sprite);
         self.v[0xF] = if collision { 1 } else { 0 };
+        self.draw_flag = true;
         self.pc += 2;
     }
 

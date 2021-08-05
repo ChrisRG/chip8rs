@@ -8,7 +8,7 @@ pub struct Ram {
 }
 
 impl Ram {
-    pub fn new() -> Self {
+    pub fn new(rom_buffer: &Vec<u8>) -> Self {
         let mut memory = [0; RAM_SIZE];
 
         // Load the font set into the first 80 bytes
@@ -17,15 +17,21 @@ impl Ram {
             memory[idx] = *byte;
         }
 
+        // Load ROM into memory starting at 0x200
+        let buffer_size = rom_buffer.len();
+        for i in 0..buffer_size {
+            memory[i + START_ROM] = rom_buffer[i];
+        }
+
         Self { memory }
     }
 
-    pub fn load_rom(&mut self, rom: &Vec<u8>) {
-        let buffer_size = rom.len();
-        for i in 0..buffer_size {
-            self.write_byte(i + START_ROM, rom[i]);
-        }
-    }
+    // pub fn load_rom(&mut self, rom: &Vec<u8>) {
+    //     let buffer_size = rom.len();
+    //     for i in 0..buffer_size {
+    //         self.write_byte(i + START_ROM, rom[i]);
+    //     }
+    // }
 
     pub fn write_byte(&mut self, index: usize, byte: u8) {
         self.memory[index] = byte;

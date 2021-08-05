@@ -1,0 +1,14 @@
+name: myapp
+version: "0.1"
+author: Chris G. <chris.geekie@gmail.com>
+about: Basic CHIP8 emulator in Rust
+args:
+    - disassemble:
+        short: d
+        long: disassemble
+        takes_value: true
+        help: Generates an assembly file of the ROM 
+    - INPUT:
+        help: Sets the input file to use
+        required: true
+        index: 1
