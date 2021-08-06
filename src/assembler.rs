@@ -93,7 +93,7 @@ impl Assembler {
             "RND" if words.len() == 3 => self.parse_rnd(&words[1..])?,
             "DRW" if words.len() == 4 => self.parse_drw(&words[1..])?,
             "SKP" if words.len() == 2 => self.parse_skp(&words[1..])?,
-            "SKNP" if words.len() == 2 => self.parse_sknp(&words[1..])?,
+            "SKNP" if words.len() == 2 => self.parse_sknp(&words[1])?,
             _ => format!("0000"),
         };
         Ok(self.build_instruction(opcode, self.line))
@@ -103,7 +103,7 @@ impl Assembler {
         // println!("[{}] {}", self.line, opcode);
         let mut bytes = [0u8; 2];
         hex::decode_to_slice(&opcode, &mut bytes as &mut [u8])
-            .expect("Failed to encode instruction");
+            .expect(format!("Failed to encode instruction {}", opcode).as_str());
         let address = line + START_ROM - 1;
         Instruction::new(opcode, bytes.to_vec(), address as u16)
     }
@@ -344,7 +344,7 @@ impl Assembler {
         let x = self.parse_register(words[0]);
         let kk = self.parse_digit(words[1]);
         match (x, kk) {
-            (Some(x), Some(kk)) => Ok(format!("C{:x}{:x}", x, kk)),
+            (Some(x), Some(kk)) => Ok(format!("C{:x}{:02x}", x, kk)),
             _ => Err(ParseError {
                 line: self.line,
                 msg: format!("Unable to parse XOR instruction {}", words.join(" ")),
@@ -378,13 +378,13 @@ impl Assembler {
         }
     }
 
-    fn parse_sknp(&self, words: &[&str]) -> Result<String, ParseError> {
-        let reg: Vec<Option<u16>> = words.iter().map(|word| self.parse_register(word)).collect();
-        match reg[0] {
+    fn parse_sknp(&self, word: &str) -> Result<String, ParseError> {
+        let reg = self.parse_register(word);
+        match reg {
             Some(x) => Ok(format!("E{:x}A1", x)),
             _ => Err(ParseError {
                 line: self.line,
-                msg: format!("Unable to parse XOR instruction {}", words.join(" ")),
+                msg: format!("Unable to parse XOR instruction {}", word),
             }),
         }
     }
@@ -470,7 +470,7 @@ impl Assembler {
     }
 
     fn write_file(&self) -> std::io::Result<()> {
-        let path = Path::new("./src/roms/test.ch8");
+        let path = Path::new("./src/roms/pong2.ch8");
         let mut file = match OpenOptions::new().write(true).create(true).open(path) {
             Err(e) => panic!("Couldn't create file {:?}: {}", path, e),
             Ok(file) => file,

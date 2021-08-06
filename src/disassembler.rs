@@ -104,8 +104,8 @@ impl Disassembler {
             (0x0C, _, _, _) => format!("RND V{}, {}", x, kk), // CXKK - RND Vx, byte: Set Vx = random byte AND kk.
             (0x0D, _, _, _) => format!("DRW V{}, V{}, {}", x, y, n), // DXYN - DRW, Vx, Vy, nibble: Display n-byte sprite starting at memory location I at (Vx, Vy), set VF = collision.
             (0x0E, _, _, _) => match kk {
-                0x9E => format!("SKP {}", x), //  Ex9E - SKP Vx:  Skip next instruction if key with the value of Vx is pressed.
-                0xA1 => format!("SKNP {}", x), //  EXA1 - SKNP Vx: Skip next instruction if key with the value of Vx is not pressed.
+                0x9E => format!("SKP V{}", x), //  Ex9E - SKP Vx:  Skip next instruction if key with the value of Vx is pressed.
+                0xA1 => format!("SKNP V{}", x), //  EXA1 - SKNP Vx: Skip next instruction if key with the value of Vx is not pressed.
                 _ => format!("{:x}", opcode),
             },
             (0x0F, _, _, _) => match kk {
@@ -115,7 +115,7 @@ impl Disassembler {
                 0x18 => format!("LD ST, V{}", x), //  FX18 - LD ST, Vx: Set sound timer = Vx.
                 0x1E => format!("ADD I, V{}", x), //  FX1E - ADD I, Vx: Set I = I + Vx.
                 0x29 => format!("LD F, V{}", x), //  FX29 - LD F, Vx: Set I = location of sprite for digit Vx.
-                0x33 => format!("BCD V{}", x), //  FX33 - LD B, Vx: Store BCD representation of Vx in memory locations I, I+1, and I+2.
+                0x33 => format!("LD B, V{}", x), //  FX33 - LD B, Vx: Store BCD representation of Vx in memory locations I, I+1, and I+2.
                 0x55 => format!("LD I, V{}", x), //  FX55 - LD [I], Vx: Store registers V0 through Vx in memory starting at location I.
                 0x65 => format!("LD V{}, I", x), //  FX65 - Ld Vx, [I]: Read registers V0 through Vx from memory starting at location I.
                 _ => format!("{:x}", opcode),
