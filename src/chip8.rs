@@ -135,11 +135,8 @@ impl Chip8 {
     pub fn assemble(&self) {
         let source = fs::read_to_string(self.rom_filepath.clone()).expect("Unable to read file.");
         let mut assembler = Assembler::new(source);
-        let result = assembler.run();
-        match result {
-            Ok(_) => println!("File assembled to bytecode"),
-            Err(_) => println!("Error in assembling bytecode"),
-        };
+        assembler.run();
+        println!("File assembled to bytecode");
     }
 
     fn execute_cycle(&mut self) {
