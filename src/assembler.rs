@@ -75,37 +75,42 @@ impl Assembler {
             .collect();
 
         let opcode = match words[0] {
-            "JP" if words.len() > 1 => self.parse_jp(&words[1..])?,
-            "CALL" if words.len() > 1 => self.parse_call(&words[1..])?,
-            "RET" if words.len() == 1 => format!("00EE"),
-            "CLS" if words.len() == 1 => format!("00E0"),
-            "SE" if words.len() == 3 => self.parse_se(&words[1..])?,
-            "SNE" if words.len() == 3 => self.parse_sne(&words[1..])?,
-            "LD" if words.len() > 1 => self.parse_ld(&words[1..])?,
-            "ADD" if words.len() > 1 => self.parse_add(&words[1..])?,
-            "OR" if words.len() == 3 => self.parse_or(&words[1..])?,
-            "AND" if words.len() == 3 => self.parse_and(&words[1..])?,
-            "XOR" if words.len() == 3 => self.parse_xor(&words[1..])?,
-            "SUB" if words.len() == 3 => self.parse_sub(&words[1..])?,
-            "SHR" if words.len() == 3 => self.parse_shr(&words[1..])?,
-            "SUBN" if words.len() == 3 => self.parse_subn(&words[1..])?,
-            "SHL" if words.len() == 3 => self.parse_shl(&words[1..])?,
-            "RND" if words.len() == 3 => self.parse_rnd(&words[1..])?,
-            "DRW" if words.len() == 4 => self.parse_drw(&words[1..])?,
-            "SKP" if words.len() == 2 => self.parse_skp(&words[1..])?,
-            "SKNP" if words.len() == 2 => self.parse_sknp(&words[1])?,
+            "JP" => self.parse_jp(&words[1..])?,
+            "CALL" => self.parse_call(&words[1..])?,
+            "RET" => format!("00EE"),
+            "CLS" => format!("00E0"),
+            "SE" => self.parse_se(&words[1..])?,
+            "SNE" => self.parse_sne(&words[1..])?,
+            "LD" => self.parse_ld(&words[1..])?,
+            "ADD" => self.parse_add(&words[1..])?,
+            "OR" => self.parse_or(&words[1..])?,
+            "AND" => self.parse_and(&words[1..])?,
+            "XOR" => self.parse_xor(&words[1..])?,
+            "SUB" => self.parse_sub(&words[1..])?,
+            "SHR" => self.parse_shr(&words[1..])?,
+            "SUBN" => self.parse_subn(&words[1..])?,
+            "SHL" => self.parse_shl(&words[1..])?,
+            "RND" => self.parse_rnd(&words[1..])?,
+            "DRW" => self.parse_drw(&words[1..])?,
+            "SKP" => self.parse_skp(&words[1..])?,
+            "SKNP" => self.parse_sknp(&words[1])?,
             _ => format!("0000"),
         };
-        Ok(self.build_instruction(opcode, self.line))
+        Ok(self.build_instruction(opcode, self.line)?)
     }
 
-    fn build_instruction(&self, opcode: String, line: usize) -> Instruction {
-        // println!("[{}] {}", self.line, opcode);
+    fn build_instruction(&self, opcode: String, line: usize) -> Result<Instruction, ParseError> {
         let mut bytes = [0u8; 2];
-        hex::decode_to_slice(&opcode, &mut bytes as &mut [u8])
-            .expect(format!("Failed to encode instruction {}", opcode).as_str());
-        let address = line + START_ROM - 1;
-        Instruction::new(opcode, bytes.to_vec(), address as u16)
+        match hex::decode_to_slice(&opcode, &mut bytes as &mut [u8]) {
+            Ok(_) => {
+                let address = line + START_ROM - 1;
+                return Ok(Instruction::new(opcode, bytes.to_vec(), address as u16));
+            }
+            Err(e) => Err(ParseError {
+                line: self.line,
+                msg: format!("Failed to encode instruction {}: {}", opcode, e),
+            }),
+        }
     }
 
     fn parse_digit(&self, word: &str) -> Option<u16> {
@@ -151,13 +156,12 @@ impl Assembler {
 
     fn parse_call(&self, words: &[&str]) -> Result<String, ParseError> {
         // 2nnn
-        if let Some(nnn) = self.parse_digit(words[0]) {
-            Ok(format!("2{:x}", nnn))
-        } else {
-            Err(ParseError {
+        match self.parse_digit(words[0]) {
+            Some(nnn) => Ok(format!("2{:x}", nnn)),
+            _ => Err(ParseError {
                 line: self.line,
                 msg: format!("Unable parse to parse call instruction {}", words.join(" ")),
-            })
+            }),
         }
     }
 
@@ -470,7 +474,7 @@ impl Assembler {
     }
 
     fn write_file(&self) -> std::io::Result<()> {
-        let path = Path::new("./src/roms/pong2.ch8");
+        let path = Path::new("./src/roms/test2.ch8");
         let mut file = match OpenOptions::new().write(true).create(true).open(path) {
             Err(e) => panic!("Couldn't create file {:?}: {}", path, e),
             Ok(file) => file,
