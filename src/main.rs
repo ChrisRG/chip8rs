@@ -6,6 +6,7 @@ mod disassembler;
 mod display;
 mod font;
 mod ram;
+mod sprites;
 use crate::chip8::Chip8;
 
 #[macro_use]

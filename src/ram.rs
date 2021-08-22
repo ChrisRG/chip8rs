@@ -1,4 +1,5 @@
 use crate::font;
+use crate::sprites;
 
 const RAM_SIZE: usize = 4096;
 const START_ROM: usize = 512; // 0x200
@@ -15,6 +16,15 @@ impl Ram {
         let font_bytes = font::FONT_SET.iter().flatten().collect::<Vec<_>>();
         for (idx, byte) in font_bytes.into_iter().enumerate() {
             memory[idx] = *byte;
+        }
+
+        // Load silly test sprites into bytes 81+
+        let byte_sprite = sprites::SPRITE
+            .into_iter()
+            .map(|line| u8::from_str_radix(line, 2).unwrap())
+            .collect::<Vec<u8>>();
+        for (idx, byte) in byte_sprite.iter().enumerate() {
+            memory[idx + 81] = *byte;
         }
 
         // Load ROM into memory starting at 0x200

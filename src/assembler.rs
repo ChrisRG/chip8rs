@@ -114,9 +114,10 @@ impl Assembler {
     }
 
     fn parse_digit(&self, word: &str) -> Option<u16> {
-        match word.parse::<u16>() {
-            Ok(num) => Some(num),
-            _ => None,
+        if let Ok(num) = word.parse::<u16>() {
+            Some(num)
+        } else {
+            None
         }
     }
 
