@@ -65,6 +65,7 @@ impl Assembler {
         }
     }
 
+    
     fn parse_instruction(&self, line: &str) -> Result<Instruction, ParseError> {
         let words: Vec<&str> = line
             .split(&[' ', ','][..])
