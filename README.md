@@ -1,4 +1,8 @@
 # CHIP-8rs
+## Installation
+* Install rust / cargo
+* Build the binary: ```cargo build --release```
+* Run pong: ```./target/release/chip8rs /roms/pong.ch8```
 
 Some resources:
 * [How to write an emulator (CHIP-8 interpreter)](http://www.multigesture.net/articles/how-to-write-an-emulator-chip-8-interpreter/) 

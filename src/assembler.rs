@@ -1,15 +1,12 @@
-use std::fmt;
-use std::fs::OpenOptions;
-use std::io::Write;
-use std::path::Path;
+use std::{fmt, fs::OpenOptions, io::Write, path::Path};
 
 use hex;
 
 const START_ROM: usize = 512; // 0x200
 
 struct ParseError {
-    line: usize,
     msg: String,
+    line: usize,
 }
 
 impl fmt::Display for ParseError {
@@ -475,7 +472,7 @@ impl Assembler {
     }
 
     fn write_file(&self) -> std::io::Result<()> {
-        let path = Path::new("./src/roms/test2.ch8");
+        let path = Path::new("./roms/test2.ch8");
         let mut file = match OpenOptions::new().write(true).create(true).open(path) {
             Err(e) => panic!("Couldn't create file {:?}: {}", path, e),
             Ok(file) => file,
