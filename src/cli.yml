@@ -15,6 +15,10 @@ args:
         help: Compiles a CHIP8 assembly (.chasm) file to byte code (.ch8) with the same name as the input
         conflicts_with:
             - disassemble
+    - speed:
+        short: s
+        long: speed
+        help: Optionally sets the speed of the CPU, defaults to 30hz.
     - INPUT:
         help: Sets the input file to use
         required: true

@@ -1,6 +1,6 @@
 use crate::ram::Ram;
 use std::fs::File;
-use std::io::Write;
+use std::io::{Read, Write};
 use std::path::Path;
 
 const START_ROM: usize = 512; // 0x200
@@ -8,17 +8,28 @@ const START_ROM: usize = 512; // 0x200
 pub struct Disassembler {
     pub ram: Ram,
     rom_size: usize,
+    rom_path: String,
 }
 
 impl Disassembler {
-    pub fn new(rom: &Vec<u8>) -> Self {
+    pub fn new(rom_path: String) -> Self {
+        let mut rom_buffer = Vec::<u8>::new();
+        let mut file = File::open(&rom_path).expect("File not found");
+
+        if let Ok(bytes_read) = file.read_to_end(&mut rom_buffer) {
+            println!("{} bytes loaded", bytes_read);
+        } else {
+            println!("Error loading ROM");
+        };
+
         Self {
-            ram: Ram::new(rom),
-            rom_size: rom.len() + START_ROM,
+            ram: Ram::new(&rom_buffer),
+            rom_size: rom_buffer.len() + START_ROM,
+            rom_path,
         }
     }
 
-    pub fn run(&self, rom_name: String) -> Result<(), String> {
+    pub fn run(&self) {
         let mut opcode_buffer = Vec::new();
         for idx in START_ROM..self.rom_size {
             // Check opcodes only at even addresses to prevent overflow
@@ -29,14 +40,14 @@ impl Disassembler {
                 opcode_buffer.push(instruction);
             }
         }
-        match self.write_file(rom_name, opcode_buffer) {
-            Ok(_) => Ok(()),
-            Err(e) => Err(format!("Error {}", e)),
+        match self.write_file(opcode_buffer) {
+            Ok(path) => println!("File disassembled: {}", path),
+            Err(e) => println!("Error: {}", e),
         }
     }
 
-    fn write_file(&self, rom_name: String, buffer: Vec<String>) -> std::io::Result<()> {
-        let file_name = self.parse_path(rom_name);
+    fn write_file(&self, buffer: Vec<String>) -> std::io::Result<String> {
+        let file_name = self.parse_path();
         let path = Path::new(&file_name);
         let display = path.display();
 
@@ -46,11 +57,11 @@ impl Disassembler {
         };
 
         writeln!(file, "{}", buffer.join("\n"))?;
-        Ok(())
+        Ok(file_name)
     }
 
-    fn parse_path(&self, rom_name: String) -> String {
-        let file_name: Vec<_> = rom_name.split(".ch8").collect();
+    fn parse_path(&self) -> String {
+        let file_name: Vec<_> = self.rom_path.split(".ch8").collect();
         return format!("{}.chasm", file_name[0]);
     }
 

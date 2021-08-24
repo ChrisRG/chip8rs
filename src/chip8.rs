@@ -1,5 +1,4 @@
 use core::time;
-use std::fs;
 use std::{fs::File, io::Read};
 use std::{
     thread,
@@ -10,10 +9,8 @@ use rodio::{OutputStream, Sink};
 
 use minifb::{Key, KeyRepeat, Window, WindowOptions};
 
-use crate::assembler::Assembler;
 use crate::bus::Bus;
 use crate::cpu::Cpu;
-use crate::disassembler::Disassembler;
 
 const SCREEN_WIDTH: usize = 640;
 const SCREEN_HEIGHT: usize = 320;
@@ -21,8 +18,6 @@ const SCREEN_HEIGHT: usize = 320;
 pub struct Chip8 {
     bus: Bus,
     cpu: Cpu,
-    rom: Vec<u8>,
-    rom_filepath: String,
 }
 
 impl Chip8 {
@@ -39,8 +34,6 @@ impl Chip8 {
         Chip8 {
             bus: Bus::new(),
             cpu: Cpu::new(&rom_buffer),
-            rom: rom_buffer,
-            rom_filepath: rom_file,
         }
     }
 
@@ -120,23 +113,6 @@ impl Chip8 {
             }
         }
         buffer
-    }
-
-    pub fn disassemble(&self) {
-        // TODO: pass in cpu ram to Disassembler rather than needing a rom field
-        let disassembler = Disassembler::new(&self.rom);
-        let result = disassembler.run(self.rom_filepath.clone());
-        match result {
-            Ok(_) => println!("ROM disassembly written to file"),
-            Err(_) => println!("Error in disassembling ROM"),
-        };
-    }
-
-    pub fn assemble(&self) {
-        let source = fs::read_to_string(self.rom_filepath.clone()).expect("Unable to read file.");
-        let mut assembler = Assembler::new(source);
-        assembler.run();
-        println!("File assembled to bytecode");
     }
 
     fn execute_cycle(&mut self) {

@@ -1,4 +1,9 @@
-use std::{fmt, fs::OpenOptions, io::Write, path::Path};
+use std::{
+    fmt,
+    fs::{self, OpenOptions},
+    io::Write,
+    path::Path,
+};
 
 use hex;
 
@@ -33,16 +38,20 @@ impl Instruction {
 }
 
 pub struct Assembler {
-    source: String,
+    source_path: String,
+    source_code: String,
     instructions: Vec<Instruction>,
     line: usize,
     address: usize,
 }
 
 impl Assembler {
-    pub fn new(source_file: String) -> Self {
+    pub fn new(source_path: String) -> Self {
+        let source_code = fs::read_to_string(&source_path).expect("Unable to read file.");
+
         Self {
-            source: source_file,
+            source_code,
+            source_path,
             instructions: Vec::new(),
             line: 1,
             address: 0x200,
@@ -52,11 +61,14 @@ impl Assembler {
     pub fn run(&mut self) {
         println!("Running assembler");
         self.parse_lines();
-        self.write_file().unwrap();
+        match self.write_file() {
+            Ok(path) => println!("File assembled: {}", path),
+            Err(e) => println!("Error: {}", e),
+        }
     }
 
     fn parse_lines(&mut self) {
-        for line in self.source.lines() {
+        for line in self.source_code.lines() {
             if let Ok(opcode) = self.parse_instruction(line) {
                 self.instructions.push(opcode);
                 self.line += 1;
@@ -65,7 +77,6 @@ impl Assembler {
         }
     }
 
-    
     fn parse_instruction(&self, line: &str) -> Result<Instruction, ParseError> {
         let words: Vec<&str> = line
             .split(&[' ', ','][..])
@@ -472,16 +483,27 @@ impl Assembler {
         }
     }
 
-    fn write_file(&self) -> std::io::Result<()> {
-        let path = Path::new("./roms/test2.ch8");
-        let mut file = match OpenOptions::new().write(true).create(true).open(path) {
-            Err(e) => panic!("Couldn't create file {:?}: {}", path, e),
+    fn write_file(&self) -> std::io::Result<String> {
+        let file_name = self.parse_path();
+        let output_path = Path::new(&file_name);
+
+        let mut file = match OpenOptions::new()
+            .write(true)
+            .create(true)
+            .open(output_path)
+        {
+            Err(e) => panic!("Couldn't create file {:?}: {}", output_path, e),
             Ok(file) => file,
         };
         for inst in self.instructions.iter() {
             let bytes = &*inst.bytes;
             file.write(bytes).unwrap();
         }
-        Ok(())
+        Ok(file_name)
+    }
+
+    fn parse_path(&self) -> String {
+        let file_name: Vec<_> = self.source_path.split(".chasm").collect();
+        return format!("{}_a.ch8", file_name[0]);
     }
 }

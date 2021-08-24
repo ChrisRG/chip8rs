@@ -7,7 +7,9 @@ mod display;
 mod font;
 mod ram;
 mod sprites;
+use crate::assembler::Assembler;
 use crate::chip8::Chip8;
+use crate::disassembler::Disassembler;
 
 #[macro_use]
 extern crate clap;
@@ -16,16 +18,19 @@ use clap::App;
 fn main() {
     let yaml = load_yaml!("cli.yml");
     let matches = App::from_yaml(yaml).get_matches();
-
-    let rom_file = matches.value_of("INPUT").unwrap().to_string();
-    println!("[Starting CHIP-8 emulator]");
-    let mut chip8 = Chip8::new(rom_file);
+    let source_file = matches
+        .value_of("INPUT")
+        .expect("Unable to read file.")
+        .to_string();
 
     if matches.is_present("disassemble") {
-        chip8.disassemble();
+        let disassembler = Disassembler::new(source_file);
+        disassembler.run();
     } else if matches.is_present("assemble") {
-        chip8.assemble();
+        let mut assembler = Assembler::new(source_file);
+        assembler.run();
     } else {
+        let mut chip8 = Chip8::new(source_file);
         chip8.run();
-    }
+    };
 }
