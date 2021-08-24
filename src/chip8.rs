@@ -61,8 +61,8 @@ impl Chip8 {
 
             clock += 1;
 
-            // 30'ish Hz refresh rate
-            thread::sleep(Duration::new(0, (1_000_000_000u32 / 600) / 5));
+            // 55'ish Hz refresh rate
+            thread::sleep(Duration::new(0, (1_000_000_000u32 / 600) / 3));
 
             let key = self.check_key(window.get_keys_pressed(KeyRepeat::Yes));
             if key.is_some() {
