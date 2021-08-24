@@ -1,4 +1,4 @@
-# CHIP-8rs
+# CHIPrs / CHIPPERS
 A CHIP-8 virtual machine written in Rust.
 
 ## Installation
@@ -29,16 +29,18 @@ Assembling a `.chasm` file: a new file will be created in the same directory nam
 
 ```$ ./target/release/chip8rs /roms/pong.chasm -a```
 
-## Todo
+## TODO
 
 Short term:
-[ ] Add ability to modify CPU cycle speed
-[ ] Switch to SDL2 for video/audio/keyboard
-[ ] Refactor assembler (it's just too ugly)
+
+- [ ] Add ability to modify CPU cycle speed
+- [ ] Switch to SDL2 for video/audio/keyboard
+- [ ] Refactor assembler (it's just too ugly)
 
 Long term:
-[ ] Implement debugger with breakpoints, stepthrough, register access
-[ ] Write a parser for a slightly higher-level language which allows for labels, variables, symbol/lookup tables, comments, etc.
+
+- [ ] Implement debugger with breakpoints, stepthrough, register access
+- [ ] Write a parser for a slightly higher-level language which allows for labels, variables, symbol/lookup tables, comments, etc.
 
 ## Additional resources
 * [How to write an emulator (CHIP-8 interpreter)](http://www.multigesture.net/articles/how-to-write-an-emulator-chip-8-interpreter/) 
