@@ -1,4 +1,4 @@
-# CHIP-8rs
+# CHIPrs / CHIPPERS
 A CHIP-8 virtual machine written in Rust.
 
 ## Installation
