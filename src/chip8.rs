@@ -1,9 +1,6 @@
-use core::time;
+// use core::time;
 use std::{fs::File, io::Read};
-use std::{
-    thread,
-    time::{Duration, Instant},
-};
+use std::{thread, time::Duration};
 
 use rodio::{OutputStream, Sink};
 
@@ -56,33 +53,36 @@ impl Chip8 {
         sink.pause();
 
         let mut buffer: Vec<u32> = vec![0; SCREEN_WIDTH * SCREEN_HEIGHT];
-        let mut last_key_update_time = Instant::now();
-        let sleep_count = time::Duration::from_millis(1);
+
+        let mut clock = 0;
 
         while window.is_open() && !window.is_key_down(Key::Escape) {
+            self.execute_cycle();
+
+            clock += 1;
+
+            // 60Hz refresh rate
+            thread::sleep(Duration::new(0, 1_000_000_000u32 / 600));
+
             let key = self.check_key(window.get_keys_pressed(KeyRepeat::Yes));
-            if key.is_some() || Instant::now() - last_key_update_time >= Duration::from_millis(200)
-            {
-                last_key_update_time = Instant::now();
+            if key.is_some() {
                 self.set_key_pressed(key);
             }
 
-            self.execute_cycle();
-
+            if clock % 10 == 0 {
+                self.cpu.update_timers();
+            }
             if self.should_redraw() {
                 buffer = self.update_display(&buffer);
                 window
                     .update_with_buffer(&buffer, SCREEN_WIDTH, SCREEN_HEIGHT)
                     .unwrap();
             }
-
             if self.should_beep() {
                 sink.play();
             } else {
                 sink.pause();
             }
-
-            thread::sleep(sleep_count / 2);
         }
     }
 

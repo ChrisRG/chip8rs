@@ -6,7 +6,6 @@ mod disassembler;
 mod display;
 mod font;
 mod ram;
-mod sprites;
 use crate::assembler::Assembler;
 use crate::chip8::Chip8;
 use crate::disassembler::Disassembler;

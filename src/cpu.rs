@@ -38,7 +38,7 @@ impl Cpu {
         self.draw_flag = false;
         let opcode = self.fetch_op();
         self.decode_op(opcode, bus);
-        self.update_timers();
+        // self.update_timers();
     }
     fn fetch_op(&mut self) -> u16 {
         // Load from self.pc (2 bytes), so fetch two successive bytes
@@ -113,7 +113,7 @@ impl Cpu {
         }
     }
 
-    fn update_timers(&mut self) {
+    pub fn update_timers(&mut self) {
         if self.delay_timer > 0 {
             self.delay_timer -= 1;
         }
@@ -304,21 +304,23 @@ impl Cpu {
     }
 
     //  ExA1: Skip next instruction if key with the value of Vx is NOT pressed.
-    fn op_exa1(&mut self, x: usize, bus: &Bus) {
+    fn op_exa1(&mut self, x: usize, bus: &mut Bus) {
         let key = self.v[x];
         if !bus.is_key_pressed(key) {
             self.pc += 4;
         } else {
+            bus.set_key_pressed(None);
             self.pc += 2;
         }
     }
 
     // Skip next instruction if key with the value of Vx is pressed.
-    fn op_ex9e(&mut self, x: usize, bus: &Bus) {
+    fn op_ex9e(&mut self, x: usize, bus: &mut Bus) {
         let key = self.v[x];
         if bus.is_key_pressed(key) {
             self.pc += 4;
         } else {
+            bus.set_key_pressed(None);
             self.pc += 2;
         }
     }
