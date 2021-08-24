@@ -2,7 +2,7 @@
 A CHIP-8 virtual machine written in Rust.
 
 ## Installation
-* Install rust / cargo
+* Install Rust using the [official installation guide](https://www.rust-lang.org/learn/get-started), which will also install the `cargo` build system.
 * Clone the GitHub repository and build the emulator:
 
 ```
@@ -10,21 +10,24 @@ $ git clone https://github.com/ChrisRG/chip8rs
 $ cd chip8rs
 $ cargo build --release
 ```
+The binary can then be found in `./target/release`.
 
 ## Usage
 
 #### Emulator 
 Running a ROM in the emulator
     
-```./target/release/chip8rs /roms/pong.ch8```
+```$ ./target/release/chip8rs /roms/pong.ch8```
 
 #### Disassembler
 Disassembling a ROM: a new `.chasm` file will be created in the same directory.
 
-```./target/release/chip8rs /roms/pong.ch8 -d```
+```$ ./target/release/chip8rs /roms/pong.ch8 -d```
 
 #### Assembler
 Assembling a `.chasm` file: a new file will be created in the same directory named `<file_name>_a.ch8`
+
+```$ ./target/release/chip8rs /roms/pong.chasm -a```
 
 
 ## Additional resources
