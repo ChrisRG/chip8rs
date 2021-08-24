@@ -26,20 +26,15 @@ impl Cpu {
             delay_timer: 0,
             sound_timer: 0,
             draw_flag: false,
-            // paused: false,
         }
     }
-
-    // pub fn load_rom(&mut self, rom: &Vec<u8>) {
-    //     self.ram.load_rom(rom);
-    // }
 
     pub fn execute_cycle(&mut self, bus: &mut Bus) {
         self.draw_flag = false;
         let opcode = self.fetch_op();
         self.decode_op(opcode, bus);
-        // self.update_timers();
     }
+
     fn fetch_op(&mut self) -> u16 {
         // Load from self.pc (2 bytes), so fetch two successive bytes
         let hi_byte = self.ram.read_byte(self.pc) as u16;
