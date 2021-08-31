@@ -1,4 +1,9 @@
 # CHIPrs / CHIPPERS
+
+<p align="center">
+  <img src="./pong.gif">
+</p>
+
 A [CHIP-8](https://en.wikipedia.org/wiki/CHIP-8) virtual machine written in Rust. CHIP-8 is an interpreted language invented in the 1970s for programming games for 8-bit microcomputers, including classics like Pong, Space Invaders, and Tetris.
 
 ## Installation
@@ -52,6 +57,7 @@ Short term:
 
 - [ ] Add ability to modify CPU cycle speed
 - [ ] Switch to SDL2 for video/audio/keyboard
+- [ ] Redesign draw instruction to remove flickering
 - [ ] Refactor assembler (it's just too ugly)
 
 Long term:
