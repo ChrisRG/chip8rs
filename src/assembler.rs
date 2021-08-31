@@ -29,6 +29,7 @@ struct Instruction {
 
 impl Instruction {
     pub fn new(opcode: String, bytes: Vec<u8>, address: u16) -> Self {
+
         Self {
             opcode,
             bytes,
