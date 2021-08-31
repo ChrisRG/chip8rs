@@ -15,17 +15,17 @@ The binary can then be found in `./target/release`.
 ## Usage
 
 #### Emulator 
-Running a ROM in the emulator
+A few games have been included in the `/roms` directory. To run a ROM, use:
     
 ```$ ./target/release/chip8rs /roms/pong.ch8```
 
 #### Disassembler
-Disassembling a ROM: a new `.chasm` file will be created in the same directory.
+It is possible to disassemble a ROM into the CHIP-8 assembly language, which will create a new `.chasm` file in the same directory as the source:
 
 ```$ ./target/release/chip8rs /roms/pong.ch8 -d```
 
 #### Assembler
-Assembling a `.chasm` file: a new file will be created in the same directory named `<file_name>_a.ch8`
+To re-assemble a `.chasm` file, which will create a new file (named `<file_name>_a.ch8`) in the same directory:
 
 ```$ ./target/release/chip8rs /roms/pong.chasm -a```
 
@@ -38,7 +38,7 @@ The architecture for the CHIP-8 virtual machine is rather simple:
 * a simple stack for storing addresses during calls to sub-routines
 * two timers: delay and sound (limited to a simple beep)
 
-Once a game's ROM has been loaded into memory (typically starting at address 0x200), the program counter increments through memory two bytes at a time, fetching the instruction or opcode at that address. The base CHIP-8 has 35 instructions (with the upgraded Super CHIP-8 adding 10 more), which include basic operations such as math, control flow, and graphics. For a list, see [this table](https://en.wikipedia.org/wiki/CHIP-8#Opcode_table) on Wikipedia. As input, the virtual machine checks for a key press from 16 possible keys. It also draws to a 64x32 pixel buffer, which has been scaled here by a factor of 10.
+Once a game's ROM has been loaded (typically starting at address 0x200), the program counter increments through memory two bytes at a time, fetching the instruction or opcode at that address. The base CHIP-8 has 35 instructions (with the upgraded Super CHIP-8 adding 10 more), which include basic operations such as math, control flow, and graphics. For a list, see [this table](https://en.wikipedia.org/wiki/CHIP-8#Opcode_table) on Wikipedia. As input, the virtual machine checks for a key press from 16 possible keys. It also draws to a 64x32 pixel buffer, which has been scaled here by a factor of 10.
 
 #### Additional resources
 * [CHIP-8 Technical Reference](https://github.com/mattmikolay/chip-8/wiki/CHIP%E2%80%908-Technical-Reference)
