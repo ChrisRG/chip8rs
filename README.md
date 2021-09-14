@@ -41,9 +41,23 @@ The architecture for the CHIP-8 virtual machine is rather simple:
 * 16 8-bit general purpose registers for fast storage, arithmetic operations, etc.
 * a program counter holding the next instruction to be decoded
 * a simple stack for storing addresses during calls to sub-routines
-* two timers: delay and sound (limited to a simple beep)
+* two timers: delay and sound
 
-Once a game's ROM has been loaded (typically starting at address 0x200), the program counter increments through memory two bytes at a time, fetching the instruction or opcode at that address. The base CHIP-8 has 35 instructions (with the upgraded Super CHIP-8 adding 10 more), which include basic operations such as math, control flow, and graphics. For a list, see [this table](https://en.wikipedia.org/wiki/CHIP-8#Opcode_table) on Wikipedia. As input, the virtual machine checks for a key press from 16 possible keys. It also draws to a 64x32 pixel buffer, which has been scaled here by a factor of 10.
+Once a game's ROM has been loaded (typically starting at address 0x200), the program counter increments through memory two bytes at a time, fetching the instruction or opcode at that address. The base CHIP-8 has 35 instructions (with the upgraded Super CHIP-8 adding 10 more), which include basic operations such as math, control flow, and graphics. For a list of opcodes, see [this table](https://en.wikipedia.org/wiki/CHIP-8#Opcode_table) on Wikipedia. 
+
+The original CHIP-8 keyboard had a 16-key keypad, which has been mapped to the following:
+
+| 1 | 2 | 3 | 4 |
+| - | - | - | - |
+| Q | W | E | R |
+| A | S | D | F |
+| Z | X | C | V |
+
+Each game has a different mapping, which often requires experimenting to find out the proper keys. For examples, with the `pong.ch8` ROM, the vertical movement of the left paddle can be controlled with `1` and `Q`, and that of the right paddle with `4` and `R`.
+
+In terms of graphics, the emulator draws sprites a 64x32 pixel buffer, which has been scaled here by a factor of 10.
+
+Audio consists of a single beep.
 
 #### Additional resources
 * [CHIP-8 Technical Reference](https://github.com/mattmikolay/chip-8/wiki/CHIP%E2%80%908-Technical-Reference)
