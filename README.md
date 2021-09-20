@@ -1,7 +1,7 @@
 # CHIPrs / CHIPPERS
 
 <p align="center">
-  <img src="./pong.gif">
+  <img src="./pong.gif" alt="Pong game with two paddles and an infinitely bouncing ball">
 </p>
 
 A [CHIP-8](https://en.wikipedia.org/wiki/CHIP-8) virtual machine written in Rust. CHIP-8 is an interpreted language invented in the 1970s for programming games for 8-bit microcomputers, including classics like Pong, Space Invaders, and Tetris.
@@ -59,11 +59,28 @@ In terms of graphics, the emulator draws sprites a 64x32 pixel buffer, which has
 
 Audio consists of a single beep.
 
-#### Additional resources
+#### Additional resources for writing an emulator
 * [CHIP-8 Technical Reference](https://github.com/mattmikolay/chip-8/wiki/CHIP%E2%80%908-Technical-Reference)
 * [CHIP-8 Instruction Set](https://github.com/mattmikolay/chip-8/wiki/CHIP%E2%80%908-Instruction-Set)
 * [How to write an emulator (CHIP-8 interpreter)](http://www.multigesture.net/articles/how-to-write-an-emulator-chip-8-interpreter/) 
 * [Writing a CHIP-8 emulator with Rust and WebAssembly](https://blog.scottlogic.com/2017/12/13/chip8-emulator-webassembly-rust.html)
+
+
+## Disassembling and re-assembling
+In order to get a better sense of the instructions used to build CHIP-8 games, I hacked together a (still pretty clunky) disassembler and assembler. The disassembler will generate a `.chasm` file, which you can peruse at your leisure in your IDE of choice. 
+
+Here is an example of the output of the disassembler for the Breakout game found in `roms/`.
+<p align="center">
+  <img src="./breakout_disassembled.jpg" alt="Code for disassembled breakout game">
+</p>
+
+Here we see a list of instructions, written out using the [typical opcode mnemonics](https://github.com/mattmikolay/chip-8/wiki/CHIP%E2%80%908-Instruction-Set) for CHIP-8:
+
+* `LD V15, 5` => Load 5 into register `V15`
+* `LD I, 780` => Load the address of a sprite at memory address 780 into register `I`
+* `DRW V10, V11, 1` => Draw at position X, Y: 1 byte starting at memory address in register `I`
+
+While still a bit difficult to grasp, this is significantly easier than trying to sift through the bytecode. 
 
 ## TODO
 
