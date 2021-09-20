@@ -87,8 +87,8 @@ impl Assembler {
         let opcode = match words[0] {
             "JP" => self.parse_jp(&words[1..])?,
             "CALL" => self.parse_call(&words[1..])?,
-            "RET" => format!("00EE"),
-            "CLS" => format!("00E0"),
+            "RET" => String::from("00EE"),
+            "CLS" => String::from("00E0"),
             "SE" => self.parse_se(&words[1..])?,
             "SNE" => self.parse_sne(&words[1..])?,
             "LD" => self.parse_ld(&words[1..])?,
@@ -103,10 +103,10 @@ impl Assembler {
             "RND" => self.parse_rnd(&words[1..])?,
             "DRW" => self.parse_drw(&words[1..])?,
             "SKP" => self.parse_skp(&words[1..])?,
-            "SKNP" => self.parse_sknp(&words[1])?,
-            _ => format!("0000"),
+            "SKNP" => self.parse_sknp(words[1])?,
+            _ => line.to_string(),
         };
-        Ok(self.build_instruction(opcode, self.line)?)
+       self.build_instruction(opcode, self.line)
     }
 
     fn build_instruction(&self, opcode: String, line: usize) -> Result<Instruction, ParseError> {
@@ -114,7 +114,7 @@ impl Assembler {
         match hex::decode_to_slice(&opcode, &mut bytes as &mut [u8]) {
             Ok(_) => {
                 let address = line + START_ROM - 1;
-                return Ok(Instruction::new(opcode, bytes.to_vec(), address as u16));
+                Ok(Instruction::new(opcode, bytes.to_vec(), address as u16))
             }
             Err(e) => Err(ParseError {
                 line: self.line,

@@ -68,7 +68,7 @@ impl Disassembler {
     fn fetch_op(&self, idx: usize) -> u16 {
         let hi_byte = self.ram.memory[idx];
         let lo_byte = self.ram.memory[idx + 1];
-        return (hi_byte as u16) << 8 | lo_byte as u16;
+        (hi_byte as u16) << 8 | lo_byte as u16
     }
 
     fn decode_op(&self, opcode: u16) -> String {
