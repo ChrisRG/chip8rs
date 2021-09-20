@@ -97,7 +97,7 @@ We can also modify these instructions and re-assemble the game. This lets us do 
 ```
 [6] DRW V10, V11, 12
 ...
-[46]DRW V12, V13, 12
+[46] DRW V12, V13, 12
 ...
 [48] DRW V6, V7, 12
 ```
@@ -129,7 +129,7 @@ Short term:
 
 - [ ] Add ability to modify CPU cycle speed
 - [ ] Switch to SDL2 for video/audio/keyboard
-- [ ] Redesign draw instruction to remove flickering
+- [ ] Redesign draw instruction to remove flickering (this one's tough)
 - [ ] Refactor assembler (it's just too ugly)
 
 Long term:
