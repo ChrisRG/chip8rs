@@ -95,20 +95,12 @@ While still a bit difficult to grasp, this is significantly easier than trying t
 We can also modify these instructions and re-assemble the game. This lets us do fun things like modify the sequence of bytes used to draw to the screen, which creates glitchy and unpredictable results! For example, in `breakout.chasm` we can modify the amount of bytes to be drawn, from 1 to 12, for lines 6 (the vertical bars), 46 (the paddle), and 48 (the ball).
 
 ```
-DRW V10, V11, 12
-```
-<p align="center">
-  <img src="./imgs/breakout_mod1.jpg" alt="Modified lines for disassembled breakout game">
-</p>
-
-```
-DRW V12, V13, 12
+[6] DRW V10, V11, 12
 ...
-DRW V6, V7, 12
+[46]DRW V12, V13, 12
+...
+[48] DRW V6, V7, 12
 ```
-<p align="center">
-  <img src="./imgs/breakout_mod2.jpg" alt="Modified lines for disassembled breakout game">
-</p>
 
 Now reassemble and rerun the game:
 
