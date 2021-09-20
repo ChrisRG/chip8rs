@@ -74,7 +74,7 @@ Here is an example of the output of the disassembler for the Breakout game found
   <img src="./breakout_disassembled.jpg" alt="Code for disassembled breakout game">
 </p>
 
-Here we see a list of instructions, written out using the [typical opcode mnemonics](https://github.com/mattmikolay/chip-8/wiki/CHIP%E2%80%908-Instruction-Set) for CHIP-8:
+Here we see a list of instructions, written out using the [typical opcode mnemonics](http://devernay.free.fr/hacks/chip8/C8TECH10.HTM) for CHIP-8:
 
 * `LD V15, 5` => Load 5 into register `V15`
 * `LD I, 780` => Load the address of a sprite at memory address 780 into register `I`
