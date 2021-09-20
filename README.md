@@ -76,9 +76,10 @@ Here is an example of the output of the disassembler for the Breakout game found
 
 Here we see a list of instructions, written out using the [typical opcode mnemonics](http://devernay.free.fr/hacks/chip8/C8TECH10.HTM) for CHIP-8:
 
-* `LD V15, 5` => Load 5 into register `V15`
+* `LD V11, 6` => Load 6 into register `V11`
+* `LD V10, 0` => Load 0 into register `V10`
 * `LD I, 780` => Load the address of a sprite at memory address 780 into register `I`
-* `DRW V10, V11, 1` => Draw at position X, Y: 1 byte starting at memory address in register `I`
+* `DRW V10, V11, 1` => At position X, Y, using the numbers found in registers `V10` (0) and `V11` (6), draw a 1-byte sprite starting at memory address in register `I`
 
 While still a bit difficult to grasp, this is significantly easier than trying to sift through the bytecode. 
 
