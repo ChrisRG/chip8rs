@@ -2,7 +2,7 @@ use sdl2::pixels::Color;
 use sdl2::rect::Rect;
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
-use sdl2::render::Canvas;
+use sdl2::render::{Canvas, Texture, TextureCreator};
 use sdl2::video::Window;
 use std::{fs::File, io::Read};
 use std::{thread, time::Duration};
@@ -63,7 +63,7 @@ impl Chip8 {
         };
 
         // Build canvas
-        let mut canvas = window.into_canvas().build().expect("Failed to initialize canvas");
+        let mut canvas = window.into_canvas().target_texture().present_vsync().build().expect("Failed to initialize canvas");
         canvas.clear();
         canvas.set_draw_color(Color::RGB(255, 255, 255));
         canvas.present();
@@ -127,7 +127,12 @@ impl Chip8 {
         }
     }
 
-    fn update_display(&mut self) {
+    fn execute_cycle(&mut self) {
+        self.cpu.execute_cycle(&mut self.bus);
+    }
+
+    fn update_framebuffer(&mut self) {
+        let mut screen_buffer = [0u8; SCREEN_WIDTH * SCREEN_HEIGHT];
         for y in 0..SCREEN_HEIGHT {
             for x in 0..SCREEN_WIDTH {
                 // Find correct index in one-dimensional frame buffer
@@ -136,20 +141,24 @@ impl Chip8 {
 
                 let color = if pixel == 1 { Color::RGB(0,255,0) } else { Color::RGB(0,0,0)};
 
+                // Update screen buffer with pixel byte information
                 self.canvas.set_draw_color(color);
                 let _ = self.canvas
                     .fill_rect(Rect::new(x as i32, y as i32, 10, 10));
             }
         }
-        self.canvas.present();
-    }
 
-    fn execute_cycle(&mut self) {
-        self.cpu.execute_cycle(&mut self.bus);
-    }
-
-    fn update_framebuffer(&mut self) {
+        // TODO
+        // Add texture field
+        // Set self.texture to new pixel_data
+        // self.texture.update(None, screen_buffer, SCREEN_WIDTH);
         self.frame_buffer = *self.bus.display.get_frame_buffer();
+    }
+
+    fn update_display(&mut self) {
+        // Need to define canvas with canvas.with_texture_canvas(texture)
+        // To update: canvas.copy(&texture)
+        self.canvas.present();
     }
 
     fn set_key_pressed(&mut self, key: Option<Keycode>) {
