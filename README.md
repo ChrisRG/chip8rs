@@ -127,8 +127,8 @@ Now we're cooking!
 
 Short term:
 
+- [ ] Switch to SDL2 for video/audio/keyboard (in progress)
 - [ ] Add ability to modify CPU cycle speed
-- [ ] Switch to SDL2 for video/audio/keyboard
 - [ ] Redesign draw instruction to remove flickering (this one's tough)
 - [ ] Refactor assembler (it's just too ugly)
 
