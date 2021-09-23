@@ -1,4 +1,6 @@
-// use core::time;
+// use sdl2::pixels::Color;
+// use sdl2::event::Event;
+// use sdl2::keyboard::Keycode;
 use std::{fs::File, io::Read};
 use std::{thread, time::Duration};
 
@@ -15,6 +17,7 @@ const SCREEN_HEIGHT: usize = 320;
 pub struct Chip8 {
     bus: Bus,
     cpu: Cpu,
+    file_path: String,
 }
 
 impl Chip8 {
@@ -31,10 +34,49 @@ impl Chip8 {
         Chip8 {
             bus: Bus::new(),
             cpu: Cpu::new(&rom_buffer),
+            file_path: rom_file,
         }
     }
 
     pub fn run(&mut self) {
+        let sdl_context = sdl2::init().unwrap();
+        let video_subsystem = sdl_context.video().unwrap();
+
+        let title = format!("CHIPRS - {}", self.file_path);
+
+        let display2 = video_subsystem.display_bounds(1).unwrap();
+        let x = display2.x + (display2.w/2 - SCREEN_WIDTH as i32 / 2);
+        let y = display2.y + (display2.h/2 - SCREEN_HEIGHT as i32 / 2);
+
+        let window = video_subsystem.window(&title, SCREEN_WIDTH as u32, SCREEN_HEIGHT as u32)
+            .position(x, y)
+            .build()
+            .unwrap();
+
+        let mut canvas = window.into_canvas().build().unwrap();
+
+        canvas.set_draw_color(Color::RGB(255, 255, 255));
+        canvas.present();
+        let mut event_pump = sdl_context.event_pump().unwrap();
+        'running: loop {
+            for event in event_pump.poll_iter() {
+                match event {
+                    Event::Quit {..} |
+                    Event::KeyDown { keycode: Some(Keycode::Escape), .. } => {
+                        break 'running
+                    },
+                    _ => {}
+                }
+            }
+            // The rest of the game loop goes here...
+
+            canvas.present();
+            ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 60));
+        }
+    }
+
+
+    pub fn run2(&mut self) {
         let mut window = Window::new(
             "CHIP8RS",
             SCREEN_WIDTH,

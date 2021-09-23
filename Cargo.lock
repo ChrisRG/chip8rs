@@ -157,6 +157,7 @@ dependencies = [
  "minifb",
  "rand",
  "rodio",
+ "sdl2",
 ]
 
 [[package]]

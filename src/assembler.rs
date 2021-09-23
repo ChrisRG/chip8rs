@@ -5,8 +5,6 @@ use std::{
     path::Path,
 };
 
-use hex;
-
 const START_ROM: usize = 512; // 0x200
 
 struct ParseError {
@@ -111,6 +109,7 @@ impl Assembler {
 
     fn build_instruction(&self, opcode: String, line: usize) -> Result<Instruction, ParseError> {
         let mut bytes = [0u8; 2];
+        // Decode string representation of hex to actual bytes
         match hex::decode_to_slice(&opcode, &mut bytes as &mut [u8]) {
             Ok(_) => {
                 let address = line + START_ROM - 1;
@@ -498,7 +497,7 @@ impl Assembler {
         };
         for inst in self.instructions.iter() {
             let bytes = &*inst.bytes;
-            file.write(bytes).unwrap();
+            file.write_all(bytes).unwrap();
         }
         Ok(file_name)
     }

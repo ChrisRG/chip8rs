@@ -33,8 +33,7 @@ impl Disassembler {
         let mut opcode_buffer = Vec::new();
         println!("Address  Opcode  Instruction");  
         for idx in START_ROM..self.rom_size {
-            // Check opcodes only at even addresses to prevent overflow
-            // Possible problems since some ROMs include binary data at various addresses
+            // Addressable memory is 16 bits, check opcodes only at even addresses
             if idx & 1 == 0 && idx + 1 < self.rom_size {
                 let opcode = self.fetch_op(idx);
                 let instruction = self.decode_op(opcode);
@@ -133,7 +132,7 @@ impl Disassembler {
                 0x65 => format!("LD V{}, I", x), //  FX65 - Ld Vx, [I]: Read registers V0 through Vx from memory starting at location I.
                 _ => format!("{:x}", opcode),
             },
-            _ => format!("{:x}", opcode),
+            _ => format!("{:x}", opcode), // With unrecognized opcodes, assume binary data being used (e.g. for sprites), write literal bytes
         };
         result
     }
