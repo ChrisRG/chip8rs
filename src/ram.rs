@@ -8,12 +8,11 @@ pub struct Ram {
 }
 
 impl Ram {
-    pub fn new(rom_buffer: &Vec<u8>) -> Self {
+    pub fn new(rom_buffer: &[u8]) -> Self {
         let mut memory = [0; RAM_SIZE];
 
         // Load the font set into the first 80 bytes
-        let font_bytes = font::FONT_SET.iter().flatten().collect::<Vec<_>>();
-        for (idx, byte) in font_bytes.into_iter().enumerate() {
+        for (idx, byte) in font::FONT_SET.iter().flatten().enumerate() {
             memory[idx] = *byte;
         }
 

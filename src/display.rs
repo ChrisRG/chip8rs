@@ -54,10 +54,10 @@ impl Display {
             }
         }
 
-        return collision;
+        collision
     }
 
-    pub fn get_frame_buffer(&self) -> &[u8] {
+    pub fn get_frame_buffer(&self) -> &[u8; WIDTH * HEIGHT] {
         &self.frame_buffer
     }
 }

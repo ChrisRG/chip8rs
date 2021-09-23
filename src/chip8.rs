@@ -1,23 +1,28 @@
-// use sdl2::pixels::Color;
-// use sdl2::event::Event;
-// use sdl2::keyboard::Keycode;
+use sdl2::pixels::Color;
+use sdl2::rect::Rect;
+use sdl2::event::Event;
+use sdl2::keyboard::Keycode;
+use sdl2::render::Canvas;
+use sdl2::video::Window;
 use std::{fs::File, io::Read};
 use std::{thread, time::Duration};
-
 use rodio::{OutputStream, Sink};
-
-use minifb::{Key, KeyRepeat, Window, WindowOptions};
 
 use crate::bus::Bus;
 use crate::cpu::Cpu;
 
-const SCREEN_WIDTH: usize = 640;
-const SCREEN_HEIGHT: usize = 320;
+const WIDTH: usize = 64;
+const HEIGHT: usize = 32;
+const SCALAR: usize = 10;
+const SCREEN_WIDTH: usize = WIDTH * SCALAR;
+const SCREEN_HEIGHT: usize = HEIGHT * SCALAR;
 
 pub struct Chip8 {
     bus: Bus,
     cpu: Cpu,
-    file_path: String,
+    canvas: Canvas<Window>,
+    sdl_context: sdl2::Sdl,
+    frame_buffer: [u8; WIDTH * HEIGHT],
 }
 
 impl Chip8 {
@@ -31,145 +36,123 @@ impl Chip8 {
             println!("Error loading ROM");
         };
 
-        Chip8 {
-            bus: Bus::new(),
-            cpu: Cpu::new(&rom_buffer),
-            file_path: rom_file,
-        }
-    }
-
-    pub fn run(&mut self) {
+        // Set up SDL
         let sdl_context = sdl2::init().unwrap();
         let video_subsystem = sdl_context.video().unwrap();
 
-        let title = format!("CHIPRS - {}", self.file_path);
+        let title = format!("CHIPRS - {}", rom_file);
 
-        let display2 = video_subsystem.display_bounds(1).unwrap();
-        let x = display2.x + (display2.w/2 - SCREEN_WIDTH as i32 / 2);
-        let y = display2.y + (display2.h/2 - SCREEN_HEIGHT as i32 / 2);
+        // Build window
+        let window = if video_subsystem.num_video_displays().unwrap() > 1 {
+            // Draw to external monitor if present, otherwise defaults to first
+            let display2 = video_subsystem.display_bounds(1).unwrap();
+            let x = display2.x + (display2.w/2 - SCREEN_WIDTH as i32 / 2);
+            let y = display2.y + (display2.h/2 - SCREEN_HEIGHT as i32 / 2);
 
-        let window = video_subsystem.window(&title, SCREEN_WIDTH as u32, SCREEN_HEIGHT as u32)
+            video_subsystem.window(&title, SCREEN_WIDTH as u32, SCREEN_HEIGHT as u32)
             .position(x, y)
+            .opengl()
             .build()
-            .unwrap();
+            .expect("Failed to initialize video subsystem")
+        } else {
+            video_subsystem.window(&title, SCREEN_WIDTH as u32, SCREEN_HEIGHT as u32)
+            .position_centered()
+            .opengl()
+            .build()
+            .expect("Failed to initialize video subsystem")
+        };
 
-        let mut canvas = window.into_canvas().build().unwrap();
-
+        // Build canvas
+        let mut canvas = window.into_canvas().build().expect("Failed to initialize canvas");
+        canvas.clear();
         canvas.set_draw_color(Color::RGB(255, 255, 255));
         canvas.present();
-        let mut event_pump = sdl_context.event_pump().unwrap();
-        'running: loop {
-            for event in event_pump.poll_iter() {
-                match event {
-                    Event::Quit {..} |
-                    Event::KeyDown { keycode: Some(Keycode::Escape), .. } => {
-                        break 'running
-                    },
-                    _ => {}
-                }
-            }
-            // The rest of the game loop goes here...
 
-            canvas.present();
-            ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 60));
+        Chip8 {
+            bus: Bus::new(),
+            cpu: Cpu::new(&rom_buffer),
+            canvas,
+            sdl_context,
+            frame_buffer: [0; WIDTH * HEIGHT],
         }
     }
 
+    // Running Chiprs in the terminal opens an SDL2 window with a canvas
+    pub fn run(&mut self) {
 
-    pub fn run2(&mut self) {
-        let mut window = Window::new(
-            "CHIP8RS",
-            SCREEN_WIDTH,
-            SCREEN_HEIGHT,
-            WindowOptions::default(),
-        )
-        .unwrap_or_else(|e| {
-            panic!("Window creation failed: {:?}", e);
-        });
+         let (_stream, stream_handle) = OutputStream::try_default().unwrap();
+         let sink = Sink::try_new(&stream_handle).unwrap();
+         let source = rodio::source::SineWave::new(400);
+         sink.append(source);
+         sink.pause();
+        
 
-        // Sound
-        let (_stream, stream_handle) = OutputStream::try_default().unwrap();
-        let sink = Sink::try_new(&stream_handle).unwrap();
-        let source = rodio::source::SineWave::new(400);
-        sink.append(source);
-        sink.pause();
-
-        let mut buffer: Vec<u32> = vec![0; SCREEN_WIDTH * SCREEN_HEIGHT];
+        let mut event_pump = self.sdl_context.event_pump().unwrap();
 
         let mut clock = 0;
 
-        while window.is_open() && !window.is_key_down(Key::Escape) {
+        // Main loop
+        'running: loop {
             self.execute_cycle();
-
             clock += 1;
+            // thread::sleep(Duration::new(0, 1_000_000_000u32 / 900));
 
-            // 55'ish Hz refresh rate
-            thread::sleep(Duration::new(0, (1_000_000_000u32 / 600) / 3));
-
-            let key = self.check_key(window.get_keys_pressed(KeyRepeat::Yes));
-            if key.is_some() {
-                self.set_key_pressed(key);
+            for event in event_pump.poll_iter() {
+                match event {
+                    Event::Quit {..} |
+                    Event::KeyDown { keycode: Some(Keycode::Escape), .. } => break 'running,
+                    Event::KeyDown { keycode: key, .. } => self.set_key_pressed(key),
+                    _ => {}
+                }
             }
 
+            // 55'ish Hz refresh rate
             if clock % 10 == 0 {
                 self.cpu.update_timers();
             }
+
+
             if self.should_redraw() {
-                buffer = self.update_display(&buffer);
-                window
-                    .update_with_buffer(&buffer, SCREEN_WIDTH, SCREEN_HEIGHT)
-                    .unwrap();
+                self.update_framebuffer();
+                self.update_display();
             }
+
+
             if self.should_beep() {
                 sink.play();
             } else {
                 sink.pause();
             }
+
         }
     }
 
-    fn check_key(&self, keys_pressed: Option<Vec<Key>>) -> Option<Key> {
-        match keys_pressed {
-            Some(keys) => {
-                if !keys.is_empty() {
-                    Some(keys[0])
-                } else {
-                    None
-                }
-            }
-            None => None,
-        }
-    }
-
-    fn update_display(&self, in_buffer: &Vec<u32>) -> Vec<u32> {
-        let mut buffer = in_buffer.clone();
-        let chip8_buffer = self.get_frame_buffer();
+    fn update_display(&mut self) {
         for y in 0..SCREEN_HEIGHT {
             for x in 0..SCREEN_WIDTH {
-                let index = self.get_frame_index(x / 10, y / 10);
-                let pixel = chip8_buffer[index];
+                // Find correct index in one-dimensional frame buffer
+                let index = (x/SCALAR) + WIDTH * (y/SCALAR);
+                let pixel = self.frame_buffer[index];
 
-                let color = if pixel == 1 { 0x00ff00 } else { 0x0 };
-                let offset = y * SCREEN_WIDTH + x;
-                buffer[offset] = color;
+                let color = if pixel == 1 { Color::RGB(0,255,0) } else { Color::RGB(0,0,0)};
+
+                self.canvas.set_draw_color(color);
+                let _ = self.canvas
+                    .fill_rect(Rect::new(x as i32, y as i32, 10, 10));
             }
         }
-        buffer
+        self.canvas.present();
     }
 
     fn execute_cycle(&mut self) {
         self.cpu.execute_cycle(&mut self.bus);
     }
 
-    fn get_frame_buffer(&self) -> &[u8] {
-        self.bus.display.get_frame_buffer()
+    fn update_framebuffer(&mut self) {
+        self.frame_buffer = *self.bus.display.get_frame_buffer();
     }
 
-    fn get_frame_index(&self, x: usize, y: usize) -> usize {
-        self.bus.display.get_index(x, y)
-    }
-
-    fn set_key_pressed(&mut self, key: Option<Key>) {
+    fn set_key_pressed(&mut self, key: Option<Keycode>) {
         self.bus.set_key_pressed(key);
     }
 

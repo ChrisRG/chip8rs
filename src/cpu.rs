@@ -1,6 +1,5 @@
 use crate::bus::Bus;
 use crate::ram::Ram;
-use rand;
 use rand::Rng;
 use std::fmt;
 pub struct Cpu {
@@ -16,7 +15,7 @@ pub struct Cpu {
 }
 
 impl Cpu {
-    pub fn new(rom_buffer: &Vec<u8>) -> Self {
+    pub fn new(rom_buffer: &[u8]) -> Self {
         Self {
             ram: Ram::new(rom_buffer),
             pc: 0x200,
@@ -39,9 +38,9 @@ impl Cpu {
         // Load from self.pc (2 bytes), so fetch two successive bytes
         let hi_byte = self.ram.read_byte(self.pc) as u16;
         let lo_byte = self.ram.read_byte(self.pc + 1) as u16;
-        let opcode = hi_byte << 8 | lo_byte;
-        opcode
+        hi_byte << 8 | lo_byte
     }
+
     fn decode_op(&mut self, opcode: u16, bus: &mut Bus) {
         // Break up 2byte opcode into nibbles and bytes
         let nibbles = (
@@ -248,7 +247,7 @@ impl Cpu {
     // If the most-significant bit of Vx is 1, then VF is set to 1, otherwise to 0. Then Vx is multiplied by 2.
     fn op_8xye(&mut self, x: usize) {
         self.v[0xf] = (self.v[x] & 0b10000000) >> 7;
-        self.v[x] = self.v[x] << 1;
+        self.v[x] <<= 1;
         self.pc += 2;
     }
 
@@ -392,11 +391,10 @@ impl Cpu {
 
 impl fmt::Debug for Cpu {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "PC: {:#X}\n", self.pc)?;
+        writeln!(f, "PC: {:#X}", self.pc)?;
         for (idx, reg) in self.v.iter().enumerate() {
             write!(f, "V{}:{:X}  ", idx, *reg)?;
         }
-        write!(f, "\n")?;
-        write!(f, "I: {:#X}", self.i)
+        writeln!(f, "I: {:#X}", self.i)
     }
 }

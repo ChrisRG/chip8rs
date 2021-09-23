@@ -12,3 +12,6 @@ rodio = "0.14.0"
 clap = {version = "2.33", features = ["yaml"]}
 hex = "0.4.3"
 sdl2 = "0.34.5"
+
+[profile.release]
+debug = true

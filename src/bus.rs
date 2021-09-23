@@ -1,5 +1,5 @@
 use crate::display::Display;
-use minifb::Key;
+use sdl2::keyboard::Keycode;
 
 pub struct Bus {
     pub display: Display,
@@ -14,7 +14,7 @@ impl Bus {
         }
     }
 
-    pub fn set_key_pressed(&mut self, key: Option<Key>) {
+    pub fn set_key_pressed(&mut self, key: Option<Keycode>) {
         self.key_pressed = self.decode_key(key);
     }
 
@@ -26,28 +26,28 @@ impl Bus {
         }
     }
 
-    fn decode_key(&self, key: Option<Key>) -> Option<u8> {
-        return match key {
-            Some(Key::Key1) => Some(0x1),
-            Some(Key::Key2) => Some(0x2),
-            Some(Key::Key3) => Some(0x3),
-            Some(Key::Key4) => Some(0xC),
+    fn decode_key(&self, key: Option<Keycode>) -> Option<u8> {
+        match key {
+            Some(Keycode::Num1) => Some(0x1),
+            Some(Keycode::Num2) => Some(0x2),
+            Some(Keycode::Num3) => Some(0x3),
+            Some(Keycode::Num4) => Some(0xC),
 
-            Some(Key::Q) => Some(0x4),
-            Some(Key::W) => Some(0x5),
-            Some(Key::E) => Some(0x6),
-            Some(Key::R) => Some(0xD),
+            Some(Keycode::Q) => Some(0x4),
+            Some(Keycode::W) => Some(0x5),
+            Some(Keycode::E) => Some(0x6),
+            Some(Keycode::R) => Some(0xD),
 
-            Some(Key::A) => Some(0x7),
-            Some(Key::S) => Some(0x8),
-            Some(Key::D) => Some(0x9),
-            Some(Key::F) => Some(0xE),
+            Some(Keycode::A) => Some(0x7),
+            Some(Keycode::S) => Some(0x8),
+            Some(Keycode::D) => Some(0x9),
+            Some(Keycode::F) => Some(0xE),
 
-            Some(Key::Z) => Some(0xA),
-            Some(Key::X) => Some(0x0),
-            Some(Key::C) => Some(0xB),
-            Some(Key::V) => Some(0xF),
+            Some(Keycode::Z) => Some(0xA),
+            Some(Keycode::X) => Some(0x0),
+            Some(Keycode::C) => Some(0xB),
+            Some(Keycode::V) => Some(0xF),
             _ => None,
-        };
+        }
     }
 }
