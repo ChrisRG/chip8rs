@@ -99,8 +99,8 @@ impl Chip8 {
         }
     }
 
-    fn update_display(&self, in_buffer: &Vec<u32>) -> Vec<u32> {
-        let mut buffer = in_buffer.clone();
+    fn update_display(&self, in_buffer: &[u32]) -> Vec<u32> {
+        let mut buffer = in_buffer.to_owned();
         let chip8_buffer = self.get_frame_buffer();
         for y in 0..SCREEN_HEIGHT {
             for x in 0..SCREEN_WIDTH {

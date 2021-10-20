@@ -5,8 +5,6 @@ use std::{
     path::Path,
 };
 
-use hex;
-
 const START_ROM: usize = 512; // 0x200
 
 struct ParseError {
@@ -29,7 +27,6 @@ struct Instruction {
 
 impl Instruction {
     pub fn new(opcode: String, bytes: Vec<u8>, address: u16) -> Self {
-
         Self {
             opcode,
             bytes,
@@ -106,7 +103,7 @@ impl Assembler {
             "SKNP" => self.parse_sknp(words[1])?,
             _ => line.to_string(),
         };
-       self.build_instruction(opcode, self.line)
+        self.build_instruction(opcode, self.line)
     }
 
     fn build_instruction(&self, opcode: String, line: usize) -> Result<Instruction, ParseError> {
@@ -498,7 +495,7 @@ impl Assembler {
         };
         for inst in self.instructions.iter() {
             let bytes = &*inst.bytes;
-            file.write(bytes).unwrap();
+            file.write_all(bytes).unwrap();
         }
         Ok(file_name)
     }

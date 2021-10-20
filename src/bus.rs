@@ -27,7 +27,7 @@ impl Bus {
     }
 
     fn decode_key(&self, key: Option<Key>) -> Option<u8> {
-        return match key {
+        match key {
             Some(Key::Key1) => Some(0x1),
             Some(Key::Key2) => Some(0x2),
             Some(Key::Key3) => Some(0x3),
@@ -48,6 +48,6 @@ impl Bus {
             Some(Key::C) => Some(0xB),
             Some(Key::V) => Some(0xF),
             _ => None,
-        };
+        }
     }
 }
