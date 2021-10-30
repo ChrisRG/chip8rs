@@ -1,3 +1,4 @@
+#[allow(dead_code)]
 mod assembler;
 mod bus;
 mod chip8;
@@ -26,7 +27,7 @@ fn main() {
         let disassembler = Disassembler::new(source_file);
         disassembler.run();
     } else if matches.is_present("assemble") {
-        let mut assembler = Assembler::new(source_file);
+        let assembler = Assembler::new(source_file);
         assembler.run();
     } else {
         let mut chip8 = Chip8::new(source_file);
