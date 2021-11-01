@@ -83,7 +83,7 @@ impl Lexer {
     }
 
     pub fn scan_tokens(&mut self) {
-        while !self.is_at_end() {
+        while self.current != self.source.len() {
             self.start = self.current;
             self.scan_token();
         }
@@ -95,10 +95,6 @@ impl Lexer {
 
     pub fn tokens(self) -> Vec<Token> {
         self.tokens
-    }
-
-    fn is_at_end(&self) -> bool {
-        self.current == self.source.len()
     }
 
     fn scan_token(&mut self) {
@@ -128,9 +124,6 @@ impl Lexer {
     }
 
     fn peek(&self) -> char {
-        if self.is_at_end() {
-            return '\0';
-        }
         self.source[self.current]
     }
 
@@ -170,26 +163,31 @@ impl Lexer {
         self.add_token(token);
     }
 
-    // TODO: Essentially the same function as number, simplify
-    fn register_v(&mut self) {
+    fn scan_number(&mut self, start: usize) -> u16 {
         while self.peek().is_digit(10) {
             self.advance();
         }
 
-        let num_string: String = self.source[self.start + 1..self.current].iter().collect();
-        let parsed_num = num_string.parse().unwrap();
+        let num_string: String = self.source[start..self.current].iter().collect();
+        num_string.parse().unwrap()
+    }
 
-        self.add_token(TokenType::RegV(parsed_num));
+    fn register_v(&mut self) {
+        let parsed_num = self.scan_number(self.start + 1);
+
+        self.add_token(TokenType::RegV(parsed_num as u8));
     }
 
     fn number(&mut self) {
-        while self.peek().is_digit(10) {
-            self.advance();
-        }
-
-        let num_string: String = self.source[self.start..self.current].iter().collect();
-        let parsed_num = num_string.parse().unwrap();
+        let parsed_num = self.scan_number(self.start);
 
         self.add_token(TokenType::Number(parsed_num));
     }
 }
+
+// TODO:
+//  Struct for chunk of bytes derived from parsing all instructions
+//  As we parse a line, we push the bytes to this struct
+//  Since CHIP8 is 16-bit addressable, need to make sure we are pushing multiples of 2 bytes
+//  Emit function: append bytecode to end of chunk
+//
