@@ -7,8 +7,7 @@ mod disassembler;
 mod display;
 mod font;
 mod ram;
-use crate::assembler::Assembler;
-use crate::chip8::Chip8;
+use crate::{assembler::Assembler, chip8::Chip8};
 use crate::disassembler::Disassembler;
 
 #[macro_use]

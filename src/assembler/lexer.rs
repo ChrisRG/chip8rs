@@ -1,69 +1,6 @@
-use std::fs;
+use super::token::{Token, TokenType};
 
-pub struct Assembler {
-    source_path: String,
-    source_code: String,
-}
-
-impl Assembler {
-    pub fn new(source_path: String) -> Self {
-        let source_code = fs::read_to_string(&source_path).expect("Unable to read file.");
-
-        Self {
-            source_code,
-            source_path,
-        }
-    }
-
-    pub fn run(&self) {
-        println!("Running assembler");
-        let mut lexer = Lexer::new(&self.source_code);
-        lexer.scan_tokens();
-        let tokens = lexer.tokens();
-        dbg!(tokens);
-    }
-}
-
-#[derive(Debug, Clone)]
-pub struct Token {
-    pub token_type: TokenType,
-    pub line: usize,
-}
-
-#[derive(PartialEq, Debug, Clone)]
-pub enum TokenType {
-    RegV(u8),
-    Number(u16),
-    Clear,
-    Ret,
-    Jump,
-    Call,
-    Load,
-    SkipEq,
-    SkipNotEq,
-    SkipPress,
-    SkipNotPress,
-    Add,
-    Or,
-    And,
-    Xor,
-    Sub,
-    ShiftRight,
-    SubNotBorrow,
-    ShiftLeft,
-    Random,
-    Draw,
-    DelayTimer,
-    SoundTimer,
-    Key,
-    RegI,
-    Sprite,
-    Bcd,
-    Unrecognized(String),
-    Eof,
-}
-
-pub struct Lexer {
+pub(crate) struct Lexer {
     source: Vec<char>,
     tokens: Vec<Token>,
     start: usize,
@@ -184,10 +121,3 @@ impl Lexer {
         self.add_token(TokenType::Number(parsed_num));
     }
 }
-
-// TODO:
-//  Struct for chunk of bytes derived from parsing all instructions
-//  As we parse a line, we push the bytes to this struct
-//  Since CHIP8 is 16-bit addressable, need to make sure we are pushing multiples of 2 bytes
-//  Emit function: append bytecode to end of chunk
-//
