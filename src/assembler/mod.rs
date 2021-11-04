@@ -1,6 +1,8 @@
 mod lexer;
 mod parser;
 mod token;
+mod instruction;
+
 use std::fs;
 
 use crate::assembler::lexer::Lexer;

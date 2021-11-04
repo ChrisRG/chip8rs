@@ -8,6 +8,10 @@ pub struct Token {
 pub enum TokenType {
     RegV(u8),
     Number(u16),
+    Label(String),
+    Directive(String),
+    Error(String),
+    Assign,
     Clear,
     Ret,
     Jump,
@@ -33,6 +37,5 @@ pub enum TokenType {
     RegI,
     Sprite,
     Bcd,
-    Unrecognized(String),
     Eof,
 }

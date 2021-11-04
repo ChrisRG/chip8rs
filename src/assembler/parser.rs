@@ -1,7 +1,16 @@
-// TODO:
-//  Struct for chunk of bytes derived from parsing all instructions
-//  As we parse a line, we push the bytes to this struct
-//  Since CHIP8 is 16-bit addressable, need to make sure we are pushing multiples of 2 bytes
-//  Emit function: append bytecode to end of chunk
 
 struct Parser;
+
+// Set up Instruction structs
+//
+// First pass:
+//  parse directives directly (i.e. set offset to .ORIG value)
+//  line by line, match first element, expect other elements to build instructions
+//  store LabelAssign line number in symbol table
+// Second pass:
+//  Update Label References to line number + offset 
+//
+// Emit bytecode:
+//  Convert Instruction to 16-bit bytecode
+//  Push bytes to chunk
+//  Write chunk to .ch8 file

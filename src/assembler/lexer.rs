@@ -39,10 +39,13 @@ impl Lexer {
         match c {
             ' ' | '\t' | '\r' | ',' => {}
             '\n' => self.line += 1,
+            ';' => self.comment(),
+            '.' => self.directive(),
             'v' | 'V' if self.peek().is_digit(10) => self.register_v(),
-            x if x.is_ascii_alphabetic() => self.symbol(),
+            ':' => self.add_token(TokenType::Assign),
             x if x.is_digit(10) => self.number(),
-            _ => println!("Unrecognized character {}", c),
+            x if x.is_ascii_alphabetic() => self.symbol(),
+            _ => self.add_token(TokenType::Error(format!("Unrecognized token `{}` line {}", c, self.line))),
         }
     }
 
@@ -62,6 +65,43 @@ impl Lexer {
 
     fn peek(&self) -> char {
         self.source[self.current]
+    }
+
+    fn comment(&mut self) {
+        while self.peek() != '\n' {
+            self.advance();
+        }
+    }
+
+    fn directive(&mut self) {
+        while self.peek().is_alphanumeric() {
+            self.advance();
+        }
+
+        let directive_str: String = self.source[self.start + 1 .. self.current].iter().collect();
+
+        self.add_token(TokenType::Directive(directive_str));
+    }
+
+    fn scan_number(&mut self, start: usize) -> u16 {
+        while self.peek().is_digit(10) {
+            self.advance();
+        }
+
+        let num_string: String = self.source[start..self.current].iter().collect();
+        num_string.parse().unwrap()
+    }
+
+    fn register_v(&mut self) {
+        let parsed_num = self.scan_number(self.start + 1);
+
+        self.add_token(TokenType::RegV(parsed_num as u8));
+    }
+
+    fn number(&mut self) {
+        let parsed_num = self.scan_number(self.start);
+
+        self.add_token(TokenType::Number(parsed_num));
     }
 
     fn symbol(&mut self) {
@@ -95,29 +135,8 @@ impl Lexer {
             "DT" => TokenType::DelayTimer,
             "B" => TokenType::Bcd,
             "F" => TokenType::Sprite,
-            _ => TokenType::Unrecognized(text),
+            _ => TokenType::Label(text),
         };
         self.add_token(token);
-    }
-
-    fn scan_number(&mut self, start: usize) -> u16 {
-        while self.peek().is_digit(10) {
-            self.advance();
-        }
-
-        let num_string: String = self.source[start..self.current].iter().collect();
-        num_string.parse().unwrap()
-    }
-
-    fn register_v(&mut self) {
-        let parsed_num = self.scan_number(self.start + 1);
-
-        self.add_token(TokenType::RegV(parsed_num as u8));
-    }
-
-    fn number(&mut self) {
-        let parsed_num = self.scan_number(self.start);
-
-        self.add_token(TokenType::Number(parsed_num));
     }
 }

@@ -1,5 +1,8 @@
-LD V14, 5
+.ORIG
+LD V14, 5 ; test
 LD V5, 0
 LD V11, 6
 LD V10, 0
 LD I, 780
+JUMP:
+ADD V1, V2
