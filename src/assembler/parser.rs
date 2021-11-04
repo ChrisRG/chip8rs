@@ -1,5 +1,14 @@
+use std::collections::HashMap;
 
-struct Parser;
+use super::{instruction::Instruction, token::Token, token::TokenType};
+
+struct Parser {
+    sym_table: HashMap<String, u16>,
+    tokens: Vec<Token>,
+    instructions: Vec<Instruction>
+}
+
+
 
 // Set up Instruction structs
 //
